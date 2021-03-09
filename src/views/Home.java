@@ -8,17 +8,14 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 
 public class Home {
-    public final static Integer BASE_COLOR = 3028032;
-    public final static Integer MAIN_COLOR = 3883602;
-    public final static Integer SECOND_COLOR = 4410462;
-    public final static Integer THIRD_COLOR = 5002858;
 
     public JFrame Frame;
     private JPanel MainPanel;
-    private JPanel SidePanel;
+    private JPanel CenterPanel;
+    private JPanel DirectoryPanel;
 
-    private JButton TakeFullscreenButton;
-    private JButton TakeScreenshotButton;
+    private JButton FullscreenButton;
+    private JButton ScreenshotButton;
     private JButton OutputDirectoryButton;
 
     private JTextField OutputDirectory;
@@ -31,23 +28,27 @@ public class Home {
     {
         Frame = new JFrame("CaesarShot");
         MainPanel = new JPanel(new BorderLayout(5, 10));
-        SidePanel = new JPanel();
-        SidePanel.setBorder(BorderFactory.createTitledBorder("Output Directory"));
+        DirectoryPanel = new JPanel();
+        DirectoryPanel.setBorder(BorderFactory.createTitledBorder("Output Directory"));
 
-        TakeFullscreenButton = createButton("Take Fullscreen Shot");
-        TakeScreenshotButton = createButton("Take Screenshot");
+        CenterPanel = new JPanel();
+
+        FullscreenButton = createButton("Take Fullscreen Shot");
+        ScreenshotButton = createButton("Take Screenshot");
         OutputDirectoryButton = createButton("Output");
+
 
         OutputDirectory = new JTextField("...", 20);
         OutputDirectory.setEditable(false);
 
-        MainPanel.add(TakeFullscreenButton, BorderLayout.NORTH);
-        MainPanel.add(TakeScreenshotButton, BorderLayout.SOUTH);
-        MainPanel.add(SidePanel, BorderLayout.CENTER);
+        MainPanel.add(FullscreenButton, BorderLayout.NORTH);
+        MainPanel.add(ScreenshotButton, BorderLayout.SOUTH);
+        MainPanel.add(CenterPanel, BorderLayout.CENTER);
         MainPanel.setBorder(new EmptyBorder(20,30,20,30));
 
         this.eventsAttacher();
-        this.initSidePanel();
+        this.initDirectoryPanel();
+        this.initCenterPanel();
         Frame.add(MainPanel);
         Frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         Frame.pack();
@@ -61,10 +62,10 @@ public class Home {
         Button.setFocusable(false);
         return Button;
     }
-    private void initSidePanel()
+    private void initDirectoryPanel()
     {
-        GroupLayout Group = new GroupLayout(SidePanel);
-        SidePanel.setLayout(Group);
+        GroupLayout Group = new GroupLayout(DirectoryPanel);
+        DirectoryPanel.setLayout(Group);
         Group.setAutoCreateGaps(true);
         Group.setAutoCreateContainerGaps(true);
         Group.setVerticalGroup(
@@ -75,18 +76,42 @@ public class Home {
         );
         Group.linkSize(SwingUtilities.VERTICAL, OutputDirectoryButton, OutputDirectory);
     }
+    private void initCenterPanel()
+    {
+        GroupLayout Group = new GroupLayout(CenterPanel);
+        CenterPanel.setLayout(Group);
+        Group.setAutoCreateGaps(true);
+        Group.setAutoCreateContainerGaps(true);
+        Group.setVerticalGroup(
+                Group.createSequentialGroup().addComponent(DirectoryPanel)
+        );
+        Group.setHorizontalGroup(
+                Group.createParallelGroup().addComponent(DirectoryPanel)
+        );
+    }
     private void eventsAttacher()
     {
         OutputDirectoryButton.addActionListener(new DirectoryController(this));
-        TakeFullscreenButton.addActionListener(new FullscreenController(this));
+        FullscreenButton.addActionListener(new FullscreenController(this));
     }
 
     public void setOutputDirectory(String Path) {
         OutputDirectory.setText(Path);
     }
-    public String getOutputDirectoryPath() {
+
+    public String getOutputDirectory()
+    {
         return OutputDirectory.getText();
     }
 
+    public void hideFrame()
+    {
+        Frame.setVisible(false);
+    }
+
+    public void showFrame()
+    {
+        Frame.setVisible(true);
+    }
 
 }

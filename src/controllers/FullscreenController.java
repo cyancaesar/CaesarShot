@@ -1,33 +1,41 @@
 package controllers;
 
-import model.Image;
-import model.Shot;
+import models.FileGuard;
+import models.Shot;
 import views.Home;
+import views.MainClass;
 
-import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
 
 public class FullscreenController implements ActionListener {
+    private FileGuard fileGuard;
+    private Shot shot;
     public Home HomeGui;
     public FullscreenController(Home Home)
     {
         this.HomeGui = Home;
+        this.shot = new Shot();
     }
     @Override
     public void actionPerformed(ActionEvent e) {
-        String Filename;
-        String Filetype;
-        Filename = JOptionPane.showInputDialog(null, "Enter Filename:", "Filename", JOptionPane.PLAIN_MESSAGE);
-        Object[] filetypes = {"png", "jpg", "gif", "jpeg"};
-        Filetype = (String)JOptionPane.showInputDialog(null, "Enter Filetype:", "Filetype", JOptionPane.PLAIN_MESSAGE, null ,filetypes, filetypes[0]);
-        if (!HomeGui.getOutputDirectoryPath().equals("..."))
+        String outputDirectory = HomeGui.getOutputDirectory();
+        if (!outputDirectory.equals("..."))
         {
-            Image.writeImage(HomeGui, Shot.fullscreenShot(), Filename, Filetype);
+            this.fileGuard = new FileGuard(this, HomeGui.getOutputDirectory());
         }
         else
         {
-            System.out.println("Error, not a valid directory");
+            this.fileGuard = new FileGuard(this);
+        }
+        try {
+            HomeGui.hideFrame();
+            fileGuard.ImageWriting(shot.fullscreenShot());
+            MainClass.sleep();
+            HomeGui.showFrame();
+        } catch (IOException | InterruptedException ioException) {
+            ioException.printStackTrace();
         }
     }
 }
