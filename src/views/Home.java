@@ -2,12 +2,18 @@ package views;
 
 import controllers.DirectoryController;
 import controllers.FullscreenController;
+import controllers.SnippetController;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
+import java.awt.SystemTray;
 
 public class Home {
+
+    DirectoryController directoryController = new DirectoryController(this);
+    FullscreenController fullscreenController = new FullscreenController(this);
+    SnippetController snippetController = new SnippetController(this);
 
     public JFrame Frame;
     private JPanel MainPanel;
@@ -15,7 +21,7 @@ public class Home {
     private JPanel DirectoryPanel;
 
     private JButton FullscreenButton;
-    private JButton ScreenshotButton;
+    private JButton SnippetButton;
     private JButton OutputDirectoryButton;
 
     private JTextField OutputDirectory;
@@ -26,6 +32,10 @@ public class Home {
     }
     private void createAndShowGui()
     {
+        if (SystemTray.isSupported())
+        {
+            System.out.println("Supported");
+        }
         Frame = new JFrame("CaesarShot");
         MainPanel = new JPanel(new BorderLayout(5, 10));
         DirectoryPanel = new JPanel();
@@ -34,19 +44,20 @@ public class Home {
         CenterPanel = new JPanel();
 
         FullscreenButton = createButton("Take Fullscreen Shot");
-        ScreenshotButton = createButton("Take Screenshot");
+        SnippetButton = createButton("Take Screenshot");
         OutputDirectoryButton = createButton("Output");
 
 
         OutputDirectory = new JTextField("...", 20);
         OutputDirectory.setEditable(false);
+        OutputDirectory.setFocusable(false);
 
         MainPanel.add(FullscreenButton, BorderLayout.NORTH);
-        MainPanel.add(ScreenshotButton, BorderLayout.SOUTH);
+        MainPanel.add(SnippetButton, BorderLayout.SOUTH);
         MainPanel.add(CenterPanel, BorderLayout.CENTER);
         MainPanel.setBorder(new EmptyBorder(20,30,20,30));
 
-        this.eventsAttacher();
+        this.eventsAttach();
         this.initDirectoryPanel();
         this.initCenterPanel();
         Frame.add(MainPanel);
@@ -89,29 +100,18 @@ public class Home {
                 Group.createParallelGroup().addComponent(DirectoryPanel)
         );
     }
-    private void eventsAttacher()
+    private void eventsAttach()
     {
-        OutputDirectoryButton.addActionListener(new DirectoryController(this));
-        FullscreenButton.addActionListener(new FullscreenController(this));
+        OutputDirectoryButton.addActionListener(directoryController);
+        FullscreenButton.addActionListener(fullscreenController);
+        SnippetButton.addActionListener(snippetController);
     }
-
     public void setOutputDirectory(String Path) {
         OutputDirectory.setText(Path);
     }
-
     public String getOutputDirectory()
     {
         return OutputDirectory.getText();
-    }
-
-    public void hideFrame()
-    {
-        Frame.setVisible(false);
-    }
-
-    public void showFrame()
-    {
-        Frame.setVisible(true);
     }
 
 }

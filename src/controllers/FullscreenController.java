@@ -3,39 +3,52 @@ package controllers;
 import models.FileGuard;
 import models.Shot;
 import views.Home;
-import views.MainClass;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.image.BufferedImage;
 import java.io.IOException;
 
-public class FullscreenController implements ActionListener {
+public class FullscreenController extends MessageDispatcher implements ActionListener {
     private FileGuard fileGuard;
     private Shot shot;
-    public Home HomeGui;
+    private BufferedImage image;
+    public Home homeGui;
     public FullscreenController(Home Home)
     {
-        this.HomeGui = Home;
+        this.homeGui = Home;
         this.shot = new Shot();
     }
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        String outputDirectory = HomeGui.getOutputDirectory();
+    private void takeShot()
+    {
+        String outputDirectory = homeGui.getOutputDirectory();
         if (!outputDirectory.equals("..."))
         {
-            this.fileGuard = new FileGuard(this, HomeGui.getOutputDirectory());
+            this.fileGuard = new FileGuard(this, outputDirectory);
         }
         else
         {
             this.fileGuard = new FileGuard(this);
         }
-        try {
-            HomeGui.hideFrame();
-            fileGuard.ImageWriting(shot.fullscreenShot());
-            MainClass.sleep();
-            HomeGui.showFrame();
-        } catch (IOException | InterruptedException ioException) {
+        shot.fullscreenShot();
+        image = shot.getImage();
+        try
+        {
+            boolean indicator = fileGuard.writeOut(image);
+            if (indicator)
+            {
+                messageWriter("Image has been successfully saved under\n" + fileGuard.GetImagePath(), 1);
+            }
+            else
+            {
+                messageWriter("Failed to save the image", 0);
+            }
+        } catch (IOException ioException) {
             ioException.printStackTrace();
         }
+    }
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        takeShot();
     }
 }

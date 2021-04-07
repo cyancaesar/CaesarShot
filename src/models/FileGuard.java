@@ -1,6 +1,7 @@
 package models;
 
 import controllers.FullscreenController;
+import controllers.SnippetController;
 
 import javax.imageio.ImageIO;
 import javax.swing.JFileChooser;
@@ -10,37 +11,38 @@ import java.io.IOException;
 
 public class FileGuard {
     private FullscreenController fullscreenController;
+    private SnippetController snippetController;
     private File file;
-    public static String DOCUMENT_PATH = new JFileChooser().getFileSystemView().getDefaultDirectory().toString();
-    public static String DIRECTORY_NAME = "\\CaesarShot\\";
+    private static final String DOCUMENT_PATH = new JFileChooser().getFileSystemView().getDefaultDirectory().toString();
+    private static final String DIRECTORY_NAME = "\\CaesarShot";
     private String filename = "shot_";
-    private String path = null;
+    private String path;
 
-    public boolean DirectoryCreator()
-    {
-        return file.mkdir();
-    }
-
-    public boolean DirectoryChecker()
+    private boolean DirectoryChecker()
     {
         this.file = new File(DOCUMENT_PATH + DIRECTORY_NAME);
         if (!file.exists())
         {
-            return this.DirectoryCreator();
+            // Create Directory
+            return file.mkdir();
         }
-        return true;
+        else
+        {
+            return true;
+        }
     }
 
-    private int FetchLastNumber()
+    private void SetFilename()
     {
         String[] files = file.list();
         assert files != null;
-        return files.length + 1;
+        int digit = files.length + 1;
+        this.filename += digit;
     }
 
-    public void SetFilename()
+    public String GetImagePath()
     {
-        this.filename += FetchLastNumber();
+        return path + GetFilename() + ".png";
     }
 
     public String GetFilename()
@@ -48,35 +50,37 @@ public class FileGuard {
         return this.filename;
     }
 
-    public boolean ImageWriting(BufferedImage image) throws IOException {
+    public boolean writeOut(BufferedImage image) throws IOException
+    {
         File output;
-        if (path != null)
-        {
-            output = new File(path + GetFilename() + ".png");
-        }
-        else
-        {
-            output = new File(DOCUMENT_PATH + DIRECTORY_NAME + GetFilename() + ".png");
-        }
+        output = new File(path + GetFilename() + ".png");
         return ImageIO.write(image, "png", output);
     }
 
     public FileGuard(FullscreenController fc)
     {
-        this.fullscreenController = fc;
-        if (DirectoryChecker())
-        {
-            SetFilename();
-        }
+        this(fc, DOCUMENT_PATH + DIRECTORY_NAME);
     }
     public FileGuard(FullscreenController fc, String path)
     {
-        this.path = path;
+        this.path = path + "\\";
         this.fullscreenController = fc;
         if (DirectoryChecker())
         {
             SetFilename();
         }
     }
-
+    public FileGuard(SnippetController sc)
+    {
+        this(sc, DOCUMENT_PATH + DIRECTORY_NAME);
+    }
+    public FileGuard(SnippetController sc, String path)
+    {
+        this.path = path + "\\";
+        this.snippetController = sc;
+        if (DirectoryChecker())
+        {
+            SetFilename();
+        }
+    }
 }
