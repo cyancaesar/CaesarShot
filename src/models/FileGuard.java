@@ -4,6 +4,8 @@ import controllers.FullscreenController;
 import controllers.SnippetController;
 
 import javax.imageio.ImageIO;
+import javax.imageio.ImageWriteParam;
+import javax.imageio.ImageWriter;
 import javax.swing.JFileChooser;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -20,7 +22,7 @@ public class FileGuard {
 
     private boolean DirectoryChecker()
     {
-        this.file = new File(DOCUMENT_PATH + DIRECTORY_NAME);
+        this.file = new File(this.path);
         if (!file.exists())
         {
             // Create Directory

@@ -1,8 +1,8 @@
 package models;
 
 import controllers.SnippetController;
-import javax.swing.JFrame;
-import javax.swing.JComponent;
+
+import javax.swing.*;
 import java.awt.*;
 import java.awt.event.AWTEventListener;
 import java.awt.event.*;
@@ -10,14 +10,14 @@ import java.awt.event.*;
 public class Drawer extends JComponent implements MouseMotionListener, MouseListener, KeyListener {
     public SnippetController snippetController;
     private final JFrame frame;
-    private Color color = Color.ORANGE;
+    private Color color = new Color(255, 165, 0, 30);
     private final AWTEventListener listener;
+    public static boolean EXIT_MARKER = false;
+    public static boolean HOVER_SNIPPET = false;
     private int baseX;
     private int baseY;
     private int mouseX;
     private int mouseY;
-    private int x;
-    private int y;
     private int finalX;
     private int finalY;
 
@@ -32,7 +32,16 @@ public class Drawer extends JComponent implements MouseMotionListener, MouseList
                 {
                     if (!(baseX == finalX && baseY == finalY))
                     {
-                        snippetController.setCoordinates(baseX, baseY, finalX, finalY);
+                        snippetController.setCoordinates(Math.min(baseX,finalX), Math.min(baseY, finalY), Math.max(baseX, finalX), Math.max(baseY, finalY));
+                        frame.dispose();
+                    }
+                }
+                else if (evt.getID() == KeyEvent.KEY_PRESSED && evt.getModifiersEx() == KeyEvent.CTRL_DOWN_MASK && evt.getKeyCode() == KeyEvent.VK_H)
+                {
+                    if (!(baseX == finalX && baseY == finalY))
+                    {
+                        Drawer.HOVER_SNIPPET = true;
+                        snippetController.setCoordinates(Math.min(baseX,finalX), Math.min(baseY, finalY), Math.max(baseX, finalX), Math.max(baseY, finalY));
                         frame.dispose();
                     }
                 }
@@ -44,8 +53,14 @@ public class Drawer extends JComponent implements MouseMotionListener, MouseList
                     finalY = baseY;
                     repaint();
                 }
+                else if (evt.getID() == KeyEvent.KEY_PRESSED && evt.getKeyCode() == KeyEvent.VK_Q)
+                {
+                    Drawer.EXIT_MARKER = true;
+                    frame.dispose();
+                }
             }
         };
+        Toolkit.getDefaultToolkit().addAWTEventListener(listener, KeyEvent.KEY_EVENT_MASK);
         frame = new JFrame();
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         frame.setSize(screenSize);
@@ -56,19 +71,22 @@ public class Drawer extends JComponent implements MouseMotionListener, MouseList
         frame.addWindowListener(this.snippetController);
         frame.getContentPane().add(this);
         frame.setUndecorated(true);
-        frame.setOpacity((float)0.3);
+        frame.setBackground(new Color(33,33,33,66));
+//        frame.setOpacity((float)0.3);
         frame.setVisible(true);
+
     }
 
     public void paintComponent(Graphics g)
     {
-        Graphics2D g2D = (Graphics2D)g;
+        Graphics2D g2d = (Graphics2D)g;
         int recWidth = Math.abs(mouseX - baseX);
         int recHeight = Math.abs(mouseY - baseY);
-        x = Math.min(mouseX, baseX);
-        y = Math.min(mouseY, baseY);
-        g2D.setColor(color);
-        g2D.fillRect(x, y, recWidth, recHeight);
+        int x = Math.min(mouseX, baseX);
+        int y = Math.min(mouseY, baseY);
+        g2d.setColor(color);
+        g2d.setStroke(new BasicStroke(12.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+        g2d.fillRect(x, y, recWidth, recHeight);
     }
 
     @Override
@@ -81,7 +99,6 @@ public class Drawer extends JComponent implements MouseMotionListener, MouseList
     public void mouseReleased(MouseEvent e) {
         finalX = e.getX();
         finalY = e.getY();
-        Toolkit.getDefaultToolkit().addAWTEventListener(listener, KeyEvent.KEY_EVENT_MASK);
     }
 
     @Override
@@ -95,14 +112,26 @@ public class Drawer extends JComponent implements MouseMotionListener, MouseList
     public void keyPressed(KeyEvent e) {
         switch (e.getKeyChar())
         {
-            case 'o':
-                color = Color.ORANGE;
+            case '1':
+                color = new Color(255, 165, 0, 30);
                 break;
-            case 'y':
+            case '2':
                 color = Color.YELLOW;
                 break;
-            case 'r':
+            case '3':
                 color = Color.RED;
+                break;
+            case '4':
+                color = Color.BLUE;
+                break;
+            case '5':
+                color = Color.GREEN;
+                break;
+            case '6':
+                color = Color.PINK;
+                break;
+            case '7':
+                color = Color.LIGHT_GRAY;
                 break;
         }
         repaint();

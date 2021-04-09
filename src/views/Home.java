@@ -43,8 +43,8 @@ public class Home {
 
         CenterPanel = new JPanel();
 
-        FullscreenButton = createButton("Take Fullscreen Shot");
-        SnippetButton = createButton("Take Screenshot");
+        FullscreenButton = createButton("Fullscreen Shot");
+        SnippetButton = createButton("Area Shot");
         OutputDirectoryButton = createButton("Output");
 
 
@@ -53,11 +53,11 @@ public class Home {
         OutputDirectory.setFocusable(false);
 
         MainPanel.add(FullscreenButton, BorderLayout.NORTH);
-        MainPanel.add(SnippetButton, BorderLayout.SOUTH);
-        MainPanel.add(CenterPanel, BorderLayout.CENTER);
+        MainPanel.add(SnippetButton, BorderLayout.CENTER);
+        MainPanel.add(CenterPanel, BorderLayout.SOUTH);
         MainPanel.setBorder(new EmptyBorder(20,30,20,30));
 
-        this.eventsAttach();
+        this.eventDispatcher();
         this.initDirectoryPanel();
         this.initCenterPanel();
         Frame.add(MainPanel);
@@ -100,7 +100,7 @@ public class Home {
                 Group.createParallelGroup().addComponent(DirectoryPanel)
         );
     }
-    private void eventsAttach()
+    private void eventDispatcher()
     {
         OutputDirectoryButton.addActionListener(directoryController);
         FullscreenButton.addActionListener(fullscreenController);

@@ -1,14 +1,16 @@
 package models;
 
-import java.awt.Robot;
-import java.awt.Toolkit;
-import java.awt.Dimension;
-import java.awt.Rectangle;
+import javax.imageio.ImageIO;
+import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.awt.image.RenderedImage;
+import java.io.File;
 
 public class Shot {
     public Robot robot;
     public BufferedImage image;
+    public BufferedImage masterImage;
+    private String copyrightFontPath = "D:\\Browser Downloads\\Fonts\\rainyhearts\\rainyhearts.ttf";
 
     public void fullscreenShot()
     {
@@ -36,12 +38,21 @@ public class Shot {
         {
             rec = new Rectangle(finalX, finalY, Math.abs(baseX-finalX), Math.abs(baseY-finalY));
         }
-        System.out.println(rec.getX());
         image = null;
         try
         {
             robot = new Robot();
             image = robot.createScreenCapture(rec);
+            masterImage = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_RGB);
+            Graphics2D g2d = masterImage.createGraphics();
+            g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+            g2d.drawImage(image, 0, 0, image.getWidth(), image.getHeight(), null);
+            g2d.setColor(Color.YELLOW);
+            g2d.setBackground(Color.CYAN);
+            Font font = Font.createFont(Font.TRUETYPE_FONT, new File(copyrightFontPath));
+            g2d.setFont(font.deriveFont(16f));
+            g2d.drawString("Captured with CaesarShot", 5, image.getHeight()-5);
+            g2d.dispose();
         }
         catch (Exception e)
         {
@@ -50,6 +61,6 @@ public class Shot {
     }
 
     public BufferedImage getImage() {
-        return image;
+        return masterImage;
     }
 }

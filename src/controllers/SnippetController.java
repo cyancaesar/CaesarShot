@@ -3,6 +3,7 @@ package controllers;
 import models.Drawer;
 import models.FileGuard;
 import models.Shot;
+import models.Sticker;
 import views.Home;
 
 import java.awt.event.ActionEvent;
@@ -84,7 +85,20 @@ public class SnippetController extends MessageDispatcher implements Controllable
 
     @Override
     public void windowClosed(WindowEvent e) {
-        fireShot();
+        if (!Drawer.EXIT_MARKER && !Drawer.HOVER_SNIPPET)
+        {
+            fireShot();
+        }
+        else if (Drawer.HOVER_SNIPPET)
+        {
+            shot.snippetShot(coordinates[0], coordinates[1], coordinates[2], coordinates[3]);
+            image = shot.getImage();
+            Sticker stickerPanel = new Sticker(this);
+        }
+        else
+        {
+            this.homeGui.Frame.setVisible(true);
+        }
     }
 
     @Override
