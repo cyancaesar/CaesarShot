@@ -6,11 +6,13 @@ import models.Shot;
 import models.Sticker;
 import views.Home;
 
+import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
+import java.awt.datatransfer.*;
 import java.io.IOException;
 
 public class SnippetController extends MessageDispatcher implements Controllable, ActionListener, WindowListener {
@@ -29,6 +31,7 @@ public class SnippetController extends MessageDispatcher implements Controllable
 
     private void init()
     {
+        setImage(shot.getImage());
         this.drawerPanel = new Drawer(this);
     }
 
@@ -94,6 +97,10 @@ public class SnippetController extends MessageDispatcher implements Controllable
             shot.snippetShot(coordinates[0], coordinates[1], coordinates[2], coordinates[3]);
             image = shot.getImage();
             Sticker stickerPanel = new Sticker(this);
+        }
+        else if (Drawer.COPY_IMAGE)
+        {
+            // Not Implemented Yet..
         }
         else
         {

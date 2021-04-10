@@ -1,5 +1,7 @@
 package models;
 
+import views.MainClass;
+
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -20,6 +22,7 @@ public class Shot {
         {
             robot = new Robot();
             image = robot.createScreenCapture(new Rectangle(screenSize));
+            MainClass.playSound("thatsamazing.wav");
         }
         catch (Exception e)
         {
@@ -43,16 +46,6 @@ public class Shot {
         {
             robot = new Robot();
             image = robot.createScreenCapture(rec);
-            masterImage = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_RGB);
-            Graphics2D g2d = masterImage.createGraphics();
-            g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-            g2d.drawImage(image, 0, 0, image.getWidth(), image.getHeight(), null);
-            g2d.setColor(Color.YELLOW);
-            g2d.setBackground(Color.CYAN);
-            Font font = Font.createFont(Font.TRUETYPE_FONT, new File(copyrightFontPath));
-            g2d.setFont(font.deriveFont(16f));
-            g2d.drawString("Captured with CaesarShot", 5, image.getHeight()-5);
-            g2d.dispose();
         }
         catch (Exception e)
         {
@@ -61,6 +54,6 @@ public class Shot {
     }
 
     public BufferedImage getImage() {
-        return masterImage;
+        return image;
     }
 }

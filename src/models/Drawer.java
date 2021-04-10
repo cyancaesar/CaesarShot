@@ -1,25 +1,36 @@
 package models;
 
 import controllers.SnippetController;
+import views.MainClass;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.AWTEventListener;
 import java.awt.event.*;
+import java.io.File;
+import java.io.IOException;
 
 public class Drawer extends JComponent implements MouseMotionListener, MouseListener, KeyListener {
     public SnippetController snippetController;
     private final JFrame frame;
-    private Color color = new Color(255, 165, 0, 30);
+    private Color color = new Color(255, 165, 0, 200);
     private final AWTEventListener listener;
     public static boolean EXIT_MARKER = false;
     public static boolean HOVER_SNIPPET = false;
-    private int baseX;
-    private int baseY;
-    private int mouseX;
-    private int mouseY;
+    public static boolean COPY_IMAGE = false;
+    private final static String INSTRUCTION_FONT_PATH = "D:\\Browser Downloads\\Fonts\\instruction\\Instruction.otf";
+    public int baseX;
+    public int baseY;
+    public int xMouse;
+    public int yMouse;
     private int finalX;
     private int finalY;
+    public int recWidth;
+    public int recHeight;
+    public int x;
+    public int y;
+    public int yScreen;
+    public int xScreen;
 
     public Drawer(SnippetController snippetController)
     {
@@ -32,6 +43,8 @@ public class Drawer extends JComponent implements MouseMotionListener, MouseList
                 {
                     if (!(baseX == finalX && baseY == finalY))
                     {
+                        MainClass.playSound("wow.wav");
+                        Drawer.HOVER_SNIPPET = false;
                         snippetController.setCoordinates(Math.min(baseX,finalX), Math.min(baseY, finalY), Math.max(baseX, finalX), Math.max(baseY, finalY));
                         frame.dispose();
                     }
@@ -40,28 +53,41 @@ public class Drawer extends JComponent implements MouseMotionListener, MouseList
                 {
                     if (!(baseX == finalX && baseY == finalY))
                     {
+                        MainClass.playSound("perfect.wav");
                         Drawer.HOVER_SNIPPET = true;
+                        snippetController.setCoordinates(Math.min(baseX,finalX), Math.min(baseY, finalY), Math.max(baseX, finalX), Math.max(baseY, finalY));
+                        frame.dispose();
+                    }
+                }
+                else if (evt.getID() == KeyEvent.KEY_PRESSED && evt.getModifiersEx() == KeyEvent.CTRL_DOWN_MASK && evt.getKeyCode() == KeyEvent.VK_C)
+                {
+                    if (!(baseX == finalX && baseY == finalY))
+                    {
+//                        MainClass.playSound("perfect.wav");
+                        Drawer.COPY_IMAGE = true;
                         snippetController.setCoordinates(Math.min(baseX,finalX), Math.min(baseY, finalY), Math.max(baseX, finalX), Math.max(baseY, finalY));
                         frame.dispose();
                     }
                 }
                 else if (evt.getID() == KeyEvent.KEY_PRESSED && evt.getKeyCode() == KeyEvent.VK_ESCAPE)
                 {
-                    mouseX = baseX;
-                    mouseY = baseY;
+                    xMouse = baseX;
+                    yMouse = baseY;
                     finalX = baseX;
                     finalY = baseY;
                     repaint();
                 }
                 else if (evt.getID() == KeyEvent.KEY_PRESSED && evt.getKeyCode() == KeyEvent.VK_Q)
                 {
+                    Drawer.HOVER_SNIPPET = false;
                     Drawer.EXIT_MARKER = true;
                     frame.dispose();
                 }
             }
         };
         Toolkit.getDefaultToolkit().addAWTEventListener(listener, KeyEvent.KEY_EVENT_MASK);
-        frame = new JFrame();
+        frame = new Frame(this);
+        frame.setIconImage(MainClass.ICON);
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         frame.setSize(screenSize);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -80,13 +106,31 @@ public class Drawer extends JComponent implements MouseMotionListener, MouseList
     public void paintComponent(Graphics g)
     {
         Graphics2D g2d = (Graphics2D)g;
-        int recWidth = Math.abs(mouseX - baseX);
-        int recHeight = Math.abs(mouseY - baseY);
-        int x = Math.min(mouseX, baseX);
-        int y = Math.min(mouseY, baseY);
+        recWidth = Math.abs(xMouse - baseX);
+        recHeight = Math.abs(yMouse - baseY);
+        x = Math.min(xMouse, baseX);
+        y = Math.min(yMouse, baseY);
+        g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_GASP);
+        Font font = null;
+        try {
+            font = Font.createFont(Font.TRUETYPE_FONT, new File(INSTRUCTION_FONT_PATH));
+        } catch (FontFormatException | IOException e) {
+            e.printStackTrace();
+        }
+        assert font != null;
+        g2d.setFont(font.deriveFont(16f));
+        g2d.setColor(Color.WHITE);
+        g2d.drawString("CTRL + H: Make Sticky Snippet", (frame.getWidth()/2)-150, 20);
+        g2d.drawString("CTRL + S: Save Snippet", (frame.getWidth()/2)-150, 40);
+        g2d.drawString("Esc: Reset Area", (frame.getWidth()/2)-150, 60);
+        g2d.drawString("Q: Quit", (frame.getWidth()/2)-150, 80);
+
         g2d.setColor(color);
-        g2d.setStroke(new BasicStroke(12.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
-        g2d.fillRect(x, y, recWidth, recHeight);
+        if (!(finalX == baseX))
+        {
+            g2d.setStroke(new BasicStroke(3.0f, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_MITER));
+            g2d.drawRect(x, y, recWidth, recHeight);
+        }
     }
 
     @Override
@@ -103,8 +147,10 @@ public class Drawer extends JComponent implements MouseMotionListener, MouseList
 
     @Override
     public void mouseDragged(MouseEvent e) {
-        mouseX = e.getX();
-        mouseY = e.getY();
+        xMouse = e.getX();
+        yMouse = e.getY();
+        xScreen = e.getXOnScreen();
+        yScreen = e.getYOnScreen();
         repaint();
     }
 
@@ -113,7 +159,7 @@ public class Drawer extends JComponent implements MouseMotionListener, MouseList
         switch (e.getKeyChar())
         {
             case '1':
-                color = new Color(255, 165, 0, 30);
+                color = new Color(255, 165, 0, 200);
                 break;
             case '2':
                 color = Color.YELLOW;
@@ -154,4 +200,25 @@ public class Drawer extends JComponent implements MouseMotionListener, MouseList
 
     @Override
     public void keyReleased(KeyEvent e) {}
+}
+class Frame extends JFrame
+{
+    Drawer drawerPanel;
+    public Frame(Drawer panel)
+    {
+        this.drawerPanel = panel;
+        System.out.println("Frame from JFrame");
+    }
+
+//    @Override
+//    public void paint(Graphics g) {
+//        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+//        int xScreenSize = screenSize.width;
+//        int yScreenSize = screenSize.height;
+//        int yTopDistant = drawerPanel.yScreen - drawerPanel.baseY;
+//        Point yPoint = new Point();
+//        yPoint.setLocation(0, yScreenSize);
+//        g.setColor(Color.MAGENTA);
+//        g.fillRect(0,0, xScreenSize,yTopDistant);
+//    }
 }

@@ -37,6 +37,7 @@ public class Home {
             System.out.println("Supported");
         }
         Frame = new JFrame("CaesarShot");
+        Frame.setIconImage(MainClass.ICON);
         MainPanel = new JPanel(new BorderLayout(5, 10));
         DirectoryPanel = new JPanel();
         DirectoryPanel.setBorder(BorderFactory.createTitledBorder("Output Directory"));

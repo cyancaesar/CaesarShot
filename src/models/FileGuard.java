@@ -7,6 +7,7 @@ import javax.imageio.ImageIO;
 import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
 import javax.swing.JFileChooser;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -56,7 +57,27 @@ public class FileGuard {
     {
         File output;
         output = new File(path + GetFilename() + ".png");
-        return ImageIO.write(image, "png", output);
+        BufferedImage masterImage = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_RGB);
+        Graphics2D g2d = masterImage.createGraphics();
+        g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+        g2d.drawImage(image, 0, 0, image.getWidth(), image.getHeight(), null);
+        g2d.setColor(Color.YELLOW);
+        g2d.setBackground(Color.CYAN);
+        String copyrightFontPath = "D:\\Browser Downloads\\Fonts\\rainyhearts\\rainyhearts.ttf";
+        Font font = null;
+        try
+        {
+            font = Font.createFont(Font.TRUETYPE_FONT, new File(copyrightFontPath));
+        }
+        catch (FontFormatException fontFormatException)
+        {
+            fontFormatException.printStackTrace();
+        }
+        assert font != null;
+        g2d.setFont(font.deriveFont(16f));
+        g2d.drawString("Captured with CaesarShot", 5, image.getHeight()-5);
+        g2d.dispose();
+        return ImageIO.write(masterImage, "png", output);
     }
 
     public FileGuard(FullscreenController fc)
