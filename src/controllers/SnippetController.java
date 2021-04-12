@@ -6,19 +6,17 @@ import models.Shot;
 import models.Sticker;
 import views.Home;
 
-import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
-import java.awt.datatransfer.*;
 import java.io.IOException;
 
 public class SnippetController extends MessageDispatcher implements Controllable, ActionListener, WindowListener {
     private Drawer drawerPanel;
     private FileGuard fileGuard;
-    private Shot shot;
+    private final Shot shot;
     private BufferedImage image;
     private int[] coordinates;
     public Home homeGui;
@@ -29,15 +27,44 @@ public class SnippetController extends MessageDispatcher implements Controllable
         this.shot = new Shot();
     }
 
-    private void init()
+    public void init()
     {
-        setImage(shot.getImage());
+//        setImage(shot.getImage());
         this.drawerPanel = new Drawer(this);
     }
 
     public void setCoordinates(int baseX, int baseY, int width, int height)
     {
         this.coordinates = new int[] {baseX, baseY, width, height};
+    }
+
+    public void saveShot(BufferedImage image)
+    {
+        String outputDirectory = homeGui.getOutputDirectory();
+        if (!outputDirectory.equals("..."))
+        {
+            this.fileGuard = new FileGuard(this, outputDirectory);
+        }
+        else
+        {
+            this.fileGuard = new FileGuard(this);
+        }
+        try
+        {
+            boolean indicator = fileGuard.writeOut(image);
+            if (indicator)
+            {
+                messageWriter("Image has been successfully saved under\n" + fileGuard.GetImagePath(), 1);
+            }
+            else
+            {
+                messageWriter("Failed to save the image", 0);
+            }
+            if (!WideKeyListener.FROM_WIDE_KEY_LISTENER)
+                this.homeGui.Frame.setVisible(true);
+        } catch (IOException ioException) {
+            ioException.printStackTrace();
+        }
     }
 
     public void fireShot()
@@ -64,14 +91,29 @@ public class SnippetController extends MessageDispatcher implements Controllable
             {
                 messageWriter("Failed to save the image", 0);
             }
-            this.homeGui.Frame.setVisible(true);
+            if (!WideKeyListener.FROM_WIDE_KEY_LISTENER)
+                this.homeGui.Frame.setVisible(true);
+
         } catch (IOException ioException) {
             ioException.printStackTrace();
         }
     }
 
+    public boolean isDrawerAlive()
+    {
+        if (this.drawerPanel != null)
+        {
+            return (this.drawerPanel.isShowing());
+        }
+        else
+        {
+            return false;
+        }
+    }
+
     @Override
     public void actionPerformed(ActionEvent e) {
+        WideKeyListener.FROM_WIDE_KEY_LISTENER = false;
         homeGui.Frame.setVisible(false);
         init();
     }
@@ -88,7 +130,7 @@ public class SnippetController extends MessageDispatcher implements Controllable
 
     @Override
     public void windowClosed(WindowEvent e) {
-        if (!Drawer.EXIT_MARKER && !Drawer.HOVER_SNIPPET)
+        if (!Drawer.EXIT_MARKER && !Drawer.HOVER_SNIPPET && !Drawer.COPY_IMAGE)
         {
             fireShot();
         }
@@ -100,11 +142,14 @@ public class SnippetController extends MessageDispatcher implements Controllable
         }
         else if (Drawer.COPY_IMAGE)
         {
-            // Not Implemented Yet..
+            shot.snippetShot(coordinates[0], coordinates[1], coordinates[2], coordinates[3]);
+            image = shot.snippetCopy();
+            ClipboardController.setClipboard(image);
         }
         else
         {
-            this.homeGui.Frame.setVisible(true);
+            if (!WideKeyListener.FROM_WIDE_KEY_LISTENER)
+                this.homeGui.Frame.setVisible(true);
         }
     }
 

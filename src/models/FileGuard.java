@@ -2,12 +2,12 @@ package models;
 
 import controllers.FullscreenController;
 import controllers.SnippetController;
+import views.MainClass;
 
 import javax.imageio.ImageIO;
-import javax.imageio.ImageWriteParam;
-import javax.imageio.ImageWriter;
 import javax.swing.JFileChooser;
 import java.awt.*;
+import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -18,6 +18,7 @@ public class FileGuard {
     private File file;
     private static final String DOCUMENT_PATH = new JFileChooser().getFileSystemView().getDefaultDirectory().toString();
     private static final String DIRECTORY_NAME = "\\CaesarShot";
+    public final static String COPYRIGHT_FONT_PATH = "\\assets\\RainyHearts.ttf";
     private String filename = "shot_";
     private String path;
 
@@ -57,17 +58,18 @@ public class FileGuard {
     {
         File output;
         output = new File(path + GetFilename() + ".png");
+
         BufferedImage masterImage = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_RGB);
         Graphics2D g2d = masterImage.createGraphics();
         g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-        g2d.drawImage(image, 0, 0, image.getWidth(), image.getHeight(), null);
+        g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g2d.drawImage(image, 0, 0, masterImage.getWidth(), masterImage.getHeight(), null);
         g2d.setColor(Color.YELLOW);
-        g2d.setBackground(Color.CYAN);
-        String copyrightFontPath = "D:\\Browser Downloads\\Fonts\\rainyhearts\\rainyhearts.ttf";
         Font font = null;
         try
         {
-            font = Font.createFont(Font.TRUETYPE_FONT, new File(copyrightFontPath));
+            font = Font.createFont(Font.TRUETYPE_FONT, new File(MainClass.CURRENT_DIR.getFile() + COPYRIGHT_FONT_PATH));
         }
         catch (FontFormatException fontFormatException)
         {

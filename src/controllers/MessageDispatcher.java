@@ -14,4 +14,8 @@ public class MessageDispatcher {
             JOptionPane.showMessageDialog(null, msg, "Success", type);
         }
     }
+    public static void messageWriter(String msg, String title, Icon icon)
+    {
+        JOptionPane.showMessageDialog(null, msg, title, JOptionPane.PLAIN_MESSAGE, icon);
+    }
 }
