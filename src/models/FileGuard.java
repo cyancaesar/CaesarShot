@@ -2,6 +2,7 @@ package models;
 
 import controllers.FullscreenController;
 import controllers.SnippetController;
+import views.Home;
 import views.MainClass;
 
 import javax.imageio.ImageIO;
@@ -58,13 +59,15 @@ public class FileGuard {
     {
         File output;
         output = new File(path + GetFilename() + ".png");
-
         BufferedImage masterImage = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_RGB);
         Graphics2D g2d = masterImage.createGraphics();
         g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
         g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g2d.drawImage(image, 0, 0, masterImage.getWidth(), masterImage.getHeight(), null);
+        if (!Home.COPYRIGHT)
+            return ImageIO.write(masterImage, "png", output);
+
         g2d.setColor(Color.YELLOW);
         Font font = null;
         try
@@ -77,6 +80,8 @@ public class FileGuard {
         }
         assert font != null;
         g2d.setFont(font.deriveFont(16f));
+        g2d.setColor(new Color(0,0,0,170));
+        g2d.drawString("Captured with CaesarShot", 4, image.getHeight()-4);
         g2d.drawString("Captured with CaesarShot", 5, image.getHeight()-5);
         g2d.dispose();
         return ImageIO.write(masterImage, "png", output);

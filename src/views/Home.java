@@ -6,6 +6,8 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 
 public class Home {
 
@@ -22,6 +24,8 @@ public class Home {
     private JButton SnippetButton;
     private JButton OutputDirectoryButton;
     private JTextField OutputDirectory;
+    public static boolean COPYRIGHT = true;
+    public static boolean SOUND = true;
 
     public Home()
     {
@@ -42,12 +46,27 @@ public class Home {
             ActionListener actionListener = e -> Frame.setVisible(true);
             PopupMenu popup = new PopupMenu();
             MenuItem exitBox = new MenuItem("Exit");
-            MenuItem shotBox = new MenuItem("Take Screenshot");
+            MenuItem shotBox = new MenuItem("Take Shot");
             MenuItem aboutBox = new MenuItem("About");
+            CheckboxMenuItem copyrightBox = new CheckboxMenuItem("Copyright in Shot");
+            CheckboxMenuItem soundBox = new CheckboxMenuItem("Sounds");
+            copyrightBox.setState(COPYRIGHT);
+            soundBox.setState(SOUND);
             aboutBox.addActionListener( e -> MessageDispatcher.messageWriter(about, "About the author", new ImageIcon(MainClass.ICON_40)));
             exitBox.addActionListener(e -> System.exit(0));
             shotBox.addActionListener(snippetController);
+            copyrightBox.addItemListener(e -> {
+                int state = e.getStateChange();
+                COPYRIGHT = state == 1;
+            });
+            soundBox.addItemListener(e -> {
+                int state = e.getStateChange();
+                SOUND = state == 1;
+            });
 
+            popup.add(soundBox);
+            popup.add(copyrightBox);
+            popup.addSeparator();
             popup.add(shotBox);
             popup.add(aboutBox);
             popup.add(exitBox);

@@ -130,7 +130,7 @@ public class SnippetController extends MessageDispatcher implements Controllable
 
     @Override
     public void windowClosed(WindowEvent e) {
-        if (!Drawer.EXIT_MARKER && !Drawer.HOVER_SNIPPET && !Drawer.COPY_IMAGE)
+        if (Drawer.SAVE_IMAGE)
         {
             fireShot();
         }
@@ -143,10 +143,10 @@ public class SnippetController extends MessageDispatcher implements Controllable
         else if (Drawer.COPY_IMAGE)
         {
             shot.snippetShot(coordinates[0], coordinates[1], coordinates[2], coordinates[3]);
-            image = shot.snippetCopy();
+            image = (Home.COPYRIGHT) ? shot.snippetCopy() : shot.getImage();
             ClipboardController.setClipboard(image);
         }
-        else
+        else if(Drawer.EXIT_MARKER)
         {
             if (!WideKeyListener.FROM_WIDE_KEY_LISTENER)
                 this.homeGui.Frame.setVisible(true);

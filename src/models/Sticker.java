@@ -1,9 +1,11 @@
 package models;
 
+import controllers.ClipboardController;
 import controllers.SnippetController;
 import controllers.WideKeyListener;
 import views.MainClass;
 
+import javax.sound.sampled.Clip;
 import javax.swing.*;
 import javax.swing.border.Border;
 import java.awt.*;
@@ -19,7 +21,17 @@ public class Sticker extends JComponent implements MouseListener, MouseMotionLis
     public SnippetController snippetController;
     public Circle circleCopy;
     public Circle circleDelete;
-    public Rectangle copy_bounds;
+    private int xMouse;
+    private int yMouse;
+    private double xMinCopy;
+    private double xMinDelete;
+    private double xMaxCopy;
+    private double xMaxDelete;
+    private double yMinCopy;
+    private double yMinDelete;
+    private double yMaxCopy;
+    private double yMaxDelete;
+
     private BufferedImage image;
     private final JFrame frame;
     private final AWTEventListener listener;
@@ -60,10 +72,20 @@ public class Sticker extends JComponent implements MouseListener, MouseMotionLis
         frame.addWindowListener(this);
         Toolkit.getDefaultToolkit().addAWTEventListener(listener, KeyEvent.KEY_EVENT_MASK);
 
-        circleCopy = new Circle(this);
-        circleDelete = new Circle(this);
+        circleCopy = new Circle(this, "copy");
+        circleDelete = new Circle(this, "delete");
         circleCopy.setImage(MainClass.COPY);
         circleDelete.setImage(MainClass.DELETE);
+
+        xMinCopy = circleCopy.getAbsoluteLocation().getX();
+        xMaxCopy = circleCopy.getAbsoluteLocation().getX()+circleCopy.frame.getWidth();
+        xMinDelete = circleDelete.getAbsoluteLocation().getX();
+        xMaxDelete = circleDelete.getAbsoluteLocation().getX()+circleDelete.frame.getWidth();
+
+        yMinCopy = circleCopy.getAbsoluteLocation().getY();
+        yMaxCopy = circleCopy.getAbsoluteLocation().getY()+circleCopy.frame.getHeight();
+        yMinDelete = circleDelete.getAbsoluteLocation().getY();
+        yMaxDelete = circleDelete.getAbsoluteLocation().getY()+circleDelete.frame.getHeight();
 
     }
 
@@ -80,6 +102,23 @@ public class Sticker extends JComponent implements MouseListener, MouseMotionLis
         return image;
     }
 
+    public void clearUp()
+    {
+        IMAGE_ID--;
+        Circle.CIRCLE_OBJECTS -= 2;
+        circleCopy.exit();
+        circleDelete.exit();
+        if (!WideKeyListener.FROM_WIDE_KEY_LISTENER)
+        {
+            this.frame.dispose();
+            this.snippetController.homeGui.Frame.setVisible(true);
+        }
+        else
+        {
+            this.frame.dispose();
+        }
+    }
+
     @Override
     public void mouseClicked(MouseEvent e) {}
 
@@ -92,7 +131,15 @@ public class Sticker extends JComponent implements MouseListener, MouseMotionLis
 
     @Override
     public void mouseReleased(MouseEvent e) {
-        this.setBorder(unpressedBorder);
+        if(xMouse >= xMinCopy && xMouse <= xMaxCopy && yMouse >= yMinCopy && yMouse <= yMaxCopy)
+        {
+            clearUp();
+            ClipboardController.setClipboard(image);
+        }
+        else if (xMouse >= xMinDelete && xMouse <= xMaxDelete && yMouse >= yMinDelete && yMouse <= yMaxDelete)
+            clearUp();
+        else
+            this.setBorder(unpressedBorder);
     }
 
     @Override
@@ -103,14 +150,18 @@ public class Sticker extends JComponent implements MouseListener, MouseMotionLis
 
     @Override
     public void mouseDragged(MouseEvent e) {
-        int xMouse = e.getXOnScreen();
-        int yMouse = e.getYOnScreen();
+        xMouse = e.getXOnScreen();
+        yMouse = e.getYOnScreen();
         frame.setLocation(xMouse-initX, yMouse-initY);
         this.setBorder(pressedBorder);
 
         if (xMouse >= SCREEN_WIDTH-RIGHT_SIDE_REGION)
         {
-            copy_bounds = circleCopy.getBounds();
+            circleCopy.getIn = xMouse >= xMinCopy && xMouse <= xMaxCopy && yMouse >= yMinCopy && yMouse <= yMaxCopy;
+            circleDelete.getIn = xMouse >= xMinDelete && xMouse <= xMaxDelete && yMouse >= yMinDelete && yMouse <= yMaxDelete;
+
+            circleCopy.requestRepaint();
+            circleDelete.requestRepaint();
             if (!circleCopy.isAlive())
                 circleCopy.showCircle();
             if (!circleDelete.isAlive())
@@ -129,23 +180,13 @@ public class Sticker extends JComponent implements MouseListener, MouseMotionLis
     public void keyPressed(KeyEvent e) {
         if (e.getKeyChar() == 'q')
         {
-            IMAGE_ID--;
-            Circle.CIRCLE_OBJECTS -= 2;
-            if (!WideKeyListener.FROM_WIDE_KEY_LISTENER)
-            {
-                this.frame.dispose();
-                this.snippetController.homeGui.Frame.setVisible(true);
-            }
-            else
-            {
-                this.frame.dispose();
-            }
+            clearUp();
         }
     }
 
     @Override
     public void windowClosed(WindowEvent e) {
-        IMAGE_ID--;
+//        IMAGE_ID--;
     }
 
     @Override
@@ -182,23 +223,36 @@ class Circle extends JComponent {
     protected JWindow frame;
     protected static int CIRCLE_OBJECTS = 0;
     private Image image;
+    public boolean getIn = false;
 
-    public Circle(Sticker s)
+    public Circle(Sticker s, String name)
     {
         ++CIRCLE_OBJECTS;
         sticker = s;
         frame = new JWindow();
         frame.setSize(100,100);
         frame.setAlwaysOnTop(true);
-        if (CIRCLE_OBJECTS == 1)
-            frame.setLocation((Sticker.SCREEN_WIDTH)-frame.getWidth()-(frame.getWidth()/4), (Sticker.SCREEN_HEIGHT/2)-frame.getHeight()-frame.getHeight() );
-        else if (CIRCLE_OBJECTS == 2)
-            frame.setLocation((Sticker.SCREEN_WIDTH)-frame.getWidth()-(frame.getWidth()/4), (Sticker.SCREEN_HEIGHT/2)-frame.getHeight()+frame.getHeight()*2 );
-
-//        frame.setUndecorated(true);
+        if (name.equals("copy"))
+            frame.setLocation((Sticker.SCREEN_WIDTH)-frame.getWidth()-(frame.getWidth()/4), (Sticker.SCREEN_HEIGHT/2)-frame.getHeight()-frame.getHeight());
+        else if (name.equals("delete"))
+            frame.setLocation((Sticker.SCREEN_WIDTH)-frame.getWidth()-(frame.getWidth()/4), (Sticker.SCREEN_HEIGHT/2)-frame.getHeight()+frame.getHeight()*2);
         frame.setBackground(new Color(0,0,0,1));
-
         frame.getContentPane().add(this);
+    }
+
+    public void exit()
+    {
+        this.frame.dispose();
+    }
+
+    public Point getAbsoluteLocation()
+    {
+        return this.frame.getLocation();
+    }
+
+    public void requestRepaint()
+    {
+        this.repaint();
     }
 
     public void setImage(Image image)
@@ -227,7 +281,10 @@ class Circle extends JComponent {
         g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_GASP);
         g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        g2d.setColor(new Color(0,0,50,33));
+        if (getIn)
+            g2d.setColor(new Color(0,0,50,200));
+        else
+            g2d.setColor(new Color(0,0,50,33));
         g2d.fillOval(0,0,frame.getWidth(), frame.getHeight());
         g2d.drawImage(image,((frame.getWidth()/2)/2)/2+((frame.getWidth()/2)/2)/2/3,(frame.getHeight()/2/2)/2+((frame.getHeight()/2)/2)/2/3,null);
         g2d.dispose();

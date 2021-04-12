@@ -17,6 +17,7 @@ public class MainClass {
     public final static Image DELETE = Toolkit.getDefaultToolkit().getImage(MainClass.class.getResource("..\\assets\\delete.png"));
     public final static URL CURRENT_DIR = MainClass.class.getProtectionDomain().getCodeSource().getLocation();
 
+
     public static void main(String[] args) {
         Runnable run = () -> {
             try
@@ -35,9 +36,9 @@ public class MainClass {
     public static synchronized void playSound(final String url) {
         new Thread(() -> {
             try {
+                System.out.println("Played");
+                AudioInputStream inputStream = AudioSystem.getAudioInputStream(MainClass.class.getResourceAsStream("..\\assets\\" + url));
                 Clip clip = AudioSystem.getClip();
-                AudioInputStream inputStream = AudioSystem.getAudioInputStream(
-                        MainClass.class.getResourceAsStream("..\\assets\\" + url));
                 clip.open(inputStream);
                 clip.start();
             } catch (Exception e) {

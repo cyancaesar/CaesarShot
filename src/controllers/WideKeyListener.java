@@ -44,9 +44,7 @@ public class WideKeyListener implements NativeKeyListener {
         }
     }
 
-    public void nativeKeyReleased(NativeKeyEvent e) {
-    }
+    public void nativeKeyReleased(NativeKeyEvent e) {}
 
-    public void nativeKeyTyped(NativeKeyEvent e) {
-    }
+    public void nativeKeyTyped(NativeKeyEvent e) {}
 }

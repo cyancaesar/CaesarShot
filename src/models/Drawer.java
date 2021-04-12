@@ -1,14 +1,18 @@
 package models;
 
 import controllers.SnippetController;
+import views.Home;
 import views.MainClass;
 
+import javax.sound.sampled.LineUnavailableException;
+import javax.sound.sampled.UnsupportedAudioFileException;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.Area;
 import java.awt.geom.Rectangle2D;
 import java.io.File;
+import java.io.IOException;
 
 public class Drawer extends JComponent implements MouseMotionListener, MouseListener, KeyListener {
     public SnippetController snippetController;
@@ -17,6 +21,7 @@ public class Drawer extends JComponent implements MouseMotionListener, MouseList
     public static boolean EXIT_MARKER = false;
     public static boolean HOVER_SNIPPET = false;
     public static boolean COPY_IMAGE = false;
+    public static boolean SAVE_IMAGE = false;
     private final static String INSTRUCTION_FONT_PATH = "\\assets\\Instruction.otf";
     private final static String DIMENSION_FONT_PATH = "\\assets\\CaviarDreams_Bold.ttf";
     private static Font INSTRUCTION_FONT = null;
@@ -46,22 +51,32 @@ public class Drawer extends JComponent implements MouseMotionListener, MouseList
                 KeyEvent evt = (KeyEvent) event;
                 if (evt.getID() == KeyEvent.KEY_PRESSED && evt.getModifiersEx() == KeyEvent.CTRL_DOWN_MASK && evt.getKeyCode() == KeyEvent.VK_S) {
                     if (!(xBase == xFinal && yBase == yFinal)) {
-                        MainClass.playSound("cut.wav");
+                        if (Home.SOUND)
+//                            MainClass.playSound("cut.wav");
                         Drawer.HOVER_SNIPPET = false;
+                        Drawer.SAVE_IMAGE = true;
+                        Drawer.COPY_IMAGE = false;
+                        Drawer.EXIT_MARKER = false;
                         snippetController.setCoordinates(Math.min(xBase, xFinal), Math.min(yBase, yFinal), Math.max(xBase, xFinal), Math.max(yBase, yFinal));
                         frame.dispose();
                     }
                 } else if (evt.getID() == KeyEvent.KEY_PRESSED && evt.getModifiersEx() == KeyEvent.CTRL_DOWN_MASK && evt.getKeyCode() == KeyEvent.VK_H) {
                     if (!(xBase == xFinal && yBase == yFinal)) {
-                        MainClass.playSound("cut.wav");
+                        if (Home.SOUND)
+                            MainClass.playSound("cut.wav");
                         Drawer.HOVER_SNIPPET = true;
+                        Drawer.SAVE_IMAGE = false;
+                        Drawer.COPY_IMAGE = false;
+                        Drawer.EXIT_MARKER = false;
                         snippetController.setCoordinates(Math.min(xBase, xFinal), Math.min(yBase, yFinal), Math.max(xBase, xFinal), Math.max(yBase, yFinal));
                         frame.dispose();
                     }
                 } else if (evt.getID() == KeyEvent.KEY_PRESSED && evt.getModifiersEx() == KeyEvent.CTRL_DOWN_MASK && evt.getKeyCode() == KeyEvent.VK_C) {
                     if (!(xBase == xFinal && yBase == yFinal)) {
-                        MainClass.playSound("cut.wav");
+                        if (Home.SOUND)
+//                            MainClass.playSound("cut.wav");
                         Drawer.HOVER_SNIPPET = false;
+                        Drawer.SAVE_IMAGE = false;
                         Drawer.COPY_IMAGE = true;
                         Drawer.EXIT_MARKER = false;
                         snippetController.setCoordinates(Math.min(xBase, xFinal), Math.min(yBase, yFinal), Math.max(xBase, xFinal), Math.max(yBase, yFinal));
@@ -75,6 +90,8 @@ public class Drawer extends JComponent implements MouseMotionListener, MouseList
                     repaint();
                 } else if (evt.getID() == KeyEvent.KEY_PRESSED && evt.getKeyCode() == KeyEvent.VK_Q) {
                     Drawer.HOVER_SNIPPET = false;
+                    Drawer.SAVE_IMAGE = false;
+                    Drawer.COPY_IMAGE = false;
                     Drawer.EXIT_MARKER = true;
                     frame.dispose();
                 }
@@ -93,6 +110,7 @@ public class Drawer extends JComponent implements MouseMotionListener, MouseList
         frame.getContentPane().add(this);
         frame.setUndecorated(true);
         frame.setOpacity(0.7f);
+//        frame.setBackground(new Color(0,0,0,1));
         frame.setVisible(true);
         frame.setAlwaysOnTop(true);
     }
