@@ -13,3 +13,10 @@
 ![ImageSnippet](./images/ImageSnippet.bmp)
 
 ![DragToRight](./images/DragToRight.bmp)
+
+---
+
+# Used Libraries
+
++ [FlatLaf](https://github.com/JFormDesigner/FlatLaf/) by JFormDesigner
++ [JNativeHook](https://github.com/kwhat/jnativehook/) by kwhat
