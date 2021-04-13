@@ -7,16 +7,16 @@ import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
 import javax.swing.*;
 import java.awt.*;
-import java.net.URL;
+import java.io.BufferedInputStream;
+import java.io.InputStream;
 
 public class MainClass {
-    public final static Image ICON = Toolkit.getDefaultToolkit().getImage(MainClass.class.getResource("..\\assets\\icon.png"));
-    public final static Image ICON_16 = Toolkit.getDefaultToolkit().getImage(MainClass.class.getResource("..\\assets\\icon-16.png"));
-    public final static Image ICON_40 = Toolkit.getDefaultToolkit().getImage(MainClass.class.getResource("..\\assets\\icon-100.png"));
-    public final static Image COPY = Toolkit.getDefaultToolkit().getImage(MainClass.class.getResource("..\\assets\\copy.png"));
-    public final static Image DELETE = Toolkit.getDefaultToolkit().getImage(MainClass.class.getResource("..\\assets\\delete.png"));
-    public final static URL CURRENT_DIR = MainClass.class.getProtectionDomain().getCodeSource().getLocation();
-
+    public static ClassLoader loader = Thread.currentThread().getContextClassLoader();
+    public final static Image ICON = Toolkit.getDefaultToolkit().getImage(loader.getResource("assets/icon.png"));
+    public final static Image ICON_16 = Toolkit.getDefaultToolkit().getImage(loader.getResource("assets/icon-16.png"));
+    public final static Image ICON_40 = Toolkit.getDefaultToolkit().getImage(loader.getResource("assets/icon-100.png"));
+    public final static Image COPY = Toolkit.getDefaultToolkit().getImage(loader.getResource("assets/copy.png"));
+    public final static Image DELETE = Toolkit.getDefaultToolkit().getImage(loader.getResource("assets/delete.png"));
 
     public static void main(String[] args) {
         Runnable run = () -> {
@@ -36,10 +36,12 @@ public class MainClass {
     public static synchronized void playSound(final String url) {
         new Thread(() -> {
             try {
-                System.out.println("Played");
-                AudioInputStream inputStream = AudioSystem.getAudioInputStream(MainClass.class.getResourceAsStream("..\\assets\\" + url));
+                InputStream audioSrc = loader.getResourceAsStream("assets/" + url);
+                assert audioSrc != null;
+                InputStream audioSrcBuffer = new BufferedInputStream(audioSrc);
+                AudioInputStream audioStream = AudioSystem.getAudioInputStream(audioSrcBuffer);
                 Clip clip = AudioSystem.getClip();
-                clip.open(inputStream);
+                clip.open(audioStream);
                 clip.start();
             } catch (Exception e) {
                 System.err.println(e.getMessage());

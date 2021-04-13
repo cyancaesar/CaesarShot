@@ -4,15 +4,12 @@ import controllers.SnippetController;
 import views.Home;
 import views.MainClass;
 
-import javax.sound.sampled.LineUnavailableException;
-import javax.sound.sampled.UnsupportedAudioFileException;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.Area;
 import java.awt.geom.Rectangle2D;
-import java.io.File;
-import java.io.IOException;
+import java.util.Objects;
 
 public class Drawer extends JComponent implements MouseMotionListener, MouseListener, KeyListener {
     public SnippetController snippetController;
@@ -22,8 +19,8 @@ public class Drawer extends JComponent implements MouseMotionListener, MouseList
     public static boolean HOVER_SNIPPET = false;
     public static boolean COPY_IMAGE = false;
     public static boolean SAVE_IMAGE = false;
-    private final static String INSTRUCTION_FONT_PATH = "\\assets\\Instruction.otf";
-    private final static String DIMENSION_FONT_PATH = "\\assets\\CaviarDreams_Bold.ttf";
+    private final static String INSTRUCTION_FONT_PATH = "assets/Instruction.otf";
+    private final static String DIMENSION_FONT_PATH = "assets/CaviarDreams_Bold.ttf";
     private static Font INSTRUCTION_FONT = null;
     private static Font DIMENSION_FONT = null;
     private static final float[] DASH_OPTION = new float[] {5.0f};
@@ -52,7 +49,7 @@ public class Drawer extends JComponent implements MouseMotionListener, MouseList
                 if (evt.getID() == KeyEvent.KEY_PRESSED && evt.getModifiersEx() == KeyEvent.CTRL_DOWN_MASK && evt.getKeyCode() == KeyEvent.VK_S) {
                     if (!(xBase == xFinal && yBase == yFinal)) {
                         if (Home.SOUND)
-//                            MainClass.playSound("cut.wav");
+                            MainClass.playSound("cut.wav");
                         Drawer.HOVER_SNIPPET = false;
                         Drawer.SAVE_IMAGE = true;
                         Drawer.COPY_IMAGE = false;
@@ -74,7 +71,7 @@ public class Drawer extends JComponent implements MouseMotionListener, MouseList
                 } else if (evt.getID() == KeyEvent.KEY_PRESSED && evt.getModifiersEx() == KeyEvent.CTRL_DOWN_MASK && evt.getKeyCode() == KeyEvent.VK_C) {
                     if (!(xBase == xFinal && yBase == yFinal)) {
                         if (Home.SOUND)
-//                            MainClass.playSound("cut.wav");
+                            MainClass.playSound("cut.wav");
                         Drawer.HOVER_SNIPPET = false;
                         Drawer.SAVE_IMAGE = false;
                         Drawer.COPY_IMAGE = true;
@@ -110,7 +107,6 @@ public class Drawer extends JComponent implements MouseMotionListener, MouseList
         frame.getContentPane().add(this);
         frame.setUndecorated(true);
         frame.setOpacity(0.7f);
-//        frame.setBackground(new Color(0,0,0,1));
         frame.setVisible(true);
         frame.setAlwaysOnTop(true);
     }
@@ -135,8 +131,9 @@ public class Drawer extends JComponent implements MouseMotionListener, MouseList
         g2d.setColor(Color.WHITE);
         g2d.drawString("CTRL + H: Make Sticky Snippet", (frame.getWidth()/2)-150, 20);
         g2d.drawString("CTRL + S: Save Snippet", (frame.getWidth()/2)-150, 40);
-        g2d.drawString("Esc: Reset Area", (frame.getWidth()/2)-150, 60);
-        g2d.drawString("Q: Quit", (frame.getWidth()/2)-150, 80);
+        g2d.drawString("CTRL + C: Copy Snippet", (frame.getWidth()/2)-150, 60);
+        g2d.drawString("Esc: Reset Area", (frame.getWidth()/2)-150, 80);
+        g2d.drawString("Q: Quit", (frame.getWidth()/2)-150, 100);
 
         if (!(xFinal == xBase))
         {
@@ -163,8 +160,8 @@ public class Drawer extends JComponent implements MouseMotionListener, MouseList
         try
         {
 
-            INSTRUCTION_FONT = Font.createFont(Font.TRUETYPE_FONT, new File(MainClass.CURRENT_DIR.getFile() + INSTRUCTION_FONT_PATH));
-            DIMENSION_FONT = Font.createFont(Font.TRUETYPE_FONT, new File(MainClass.CURRENT_DIR.getFile() + DIMENSION_FONT_PATH));
+            INSTRUCTION_FONT = Font.createFont(Font.TRUETYPE_FONT, Objects.requireNonNull(MainClass.loader.getResourceAsStream(INSTRUCTION_FONT_PATH)));
+            DIMENSION_FONT = Font.createFont(Font.TRUETYPE_FONT, Objects.requireNonNull(MainClass.loader.getResourceAsStream(DIMENSION_FONT_PATH)));
         }
         catch (Exception e)
         {

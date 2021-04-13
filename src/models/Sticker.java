@@ -5,7 +5,6 @@ import controllers.SnippetController;
 import controllers.WideKeyListener;
 import views.MainClass;
 
-import javax.sound.sampled.Clip;
 import javax.swing.*;
 import javax.swing.border.Border;
 import java.awt.*;
@@ -139,6 +138,11 @@ public class Sticker extends JComponent implements MouseListener, MouseMotionLis
         else if (xMouse >= xMinDelete && xMouse <= xMaxDelete && yMouse >= yMinDelete && yMouse <= yMaxDelete)
             clearUp();
         else
+            if (circleCopy.isAlive() && circleDelete.isAlive())
+            {
+                circleCopy.hideCircle();
+                circleDelete.hideCircle();
+            }
             this.setBorder(unpressedBorder);
     }
 

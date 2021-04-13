@@ -6,12 +6,12 @@ import views.Home;
 import views.MainClass;
 
 import javax.imageio.ImageIO;
-import javax.swing.JFileChooser;
+import javax.swing.*;
 import java.awt.*;
-import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.Objects;
 
 public class FileGuard {
     private FullscreenController fullscreenController;
@@ -19,7 +19,7 @@ public class FileGuard {
     private File file;
     private static final String DOCUMENT_PATH = new JFileChooser().getFileSystemView().getDefaultDirectory().toString();
     private static final String DIRECTORY_NAME = "\\CaesarShot";
-    public final static String COPYRIGHT_FONT_PATH = "\\assets\\RainyHearts.ttf";
+    public final static String COPYRIGHT_FONT_PATH = "assets/RainyHearts.ttf";
     private String filename = "shot_";
     private String path;
 
@@ -68,11 +68,10 @@ public class FileGuard {
         if (!Home.COPYRIGHT)
             return ImageIO.write(masterImage, "png", output);
 
-        g2d.setColor(Color.YELLOW);
         Font font = null;
         try
         {
-            font = Font.createFont(Font.TRUETYPE_FONT, new File(MainClass.CURRENT_DIR.getFile() + COPYRIGHT_FONT_PATH));
+            font = Font.createFont(Font.TRUETYPE_FONT, Objects.requireNonNull(MainClass.loader.getResourceAsStream(COPYRIGHT_FONT_PATH)));
         }
         catch (FontFormatException fontFormatException)
         {
@@ -82,6 +81,7 @@ public class FileGuard {
         g2d.setFont(font.deriveFont(16f));
         g2d.setColor(new Color(0,0,0,170));
         g2d.drawString("Captured with CaesarShot", 4, image.getHeight()-4);
+        g2d.setColor(Color.YELLOW);
         g2d.drawString("Captured with CaesarShot", 5, image.getHeight()-5);
         g2d.dispose();
         return ImageIO.write(masterImage, "png", output);

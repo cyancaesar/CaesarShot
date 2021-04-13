@@ -1,12 +1,13 @@
 package models;
 
 import views.MainClass;
+
 import java.awt.*;
 import java.awt.image.BaseMultiResolutionImage;
 import java.awt.image.BufferedImage;
-import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.Objects;
 
 public class Shot {
     public Robot robot;
@@ -70,7 +71,7 @@ public class Shot {
         Font font = null;
         try
         {
-            font = Font.createFont(Font.TRUETYPE_FONT, new File(MainClass.CURRENT_DIR.getFile() + FileGuard.COPYRIGHT_FONT_PATH));
+            font = Font.createFont(Font.TRUETYPE_FONT, Objects.requireNonNull(MainClass.loader.getResourceAsStream(FileGuard.COPYRIGHT_FONT_PATH)));
         }
         catch (FontFormatException | IOException fontFormatException)
         {
