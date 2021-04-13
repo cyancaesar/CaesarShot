@@ -5,3 +5,11 @@
 + Capture full screenshot
 + Add hover snippet on the screen
 + The ability to copy or delete the snippet
+
+![MainWindow](./images/MainWindow.bmp)
+
+![RegionCapture](./images/RegionCapture.bmp)
+
+![ImageSnippet](./images/ImageSnippet.bmp)
+
+![DragToRight](./images/DragToRight.bmp)
