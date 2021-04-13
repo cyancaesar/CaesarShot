@@ -1,5 +1,5 @@
 # CaesarShot
-#### A utility that capture full and reginal screenshot.
+#### A utility that captures full and reginal screenshot.
 #### The snippet can set on top of the screen until the user decides to copy or delete it.
 + Capture region screenshot
 + Capture full screenshot
