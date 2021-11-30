@@ -15,8 +15,9 @@ public class Sticker extends JComponent implements MouseListener, MouseMotionLis
     protected static int SCREEN_WIDTH = Toolkit.getDefaultToolkit().getScreenSize().width;
     protected static int SCREEN_HEIGHT = Toolkit.getDefaultToolkit().getScreenSize().height;
     private static int RIGHT_SIDE_REGION = SCREEN_WIDTH/7;
-
     private static int IMAGE_ID = 0;
+    private static boolean RESIZE_PRESSED = false;
+
     public SnippetController snippetController;
     public Circle circleCopy;
     public Circle circleDelete;
@@ -32,21 +33,24 @@ public class Sticker extends JComponent implements MouseListener, MouseMotionLis
     private double yMaxDelete;
 
     private BufferedImage image;
+    private Image scaledImage;
+    private int imageWidth;
+    private int imageHeight;
+
     private final JFrame frame;
-    private final AWTEventListener listener;
     private final Border unpressedBorder = BorderFactory.createLineBorder(Color.WHITE, 0, true);
     private final Border pressedBorder = BorderFactory.createLineBorder(Color.LIGHT_GRAY, 3, true);
-    private int initX;
-    private int initY;
+    private int xInit;
+    private int yInit;
+
     public Sticker(SnippetController sc)
     {
-        listener = new AWTEventListener() {
+        AWTEventListener listener = new AWTEventListener() {
             @Override
             public void eventDispatched(AWTEvent event) {
-                KeyEvent evt = (KeyEvent)event;
-                if (evt.getID() == KeyEvent.KEY_PRESSED && evt.getModifiersEx() == KeyEvent.CTRL_DOWN_MASK && evt.getKeyCode() == KeyEvent.VK_S)
-                {
-                    Drawer.HOVER_SNIPPET = false;
+                KeyEvent evt = (KeyEvent) event;
+                if (evt.getID() == KeyEvent.KEY_PRESSED && evt.getModifiersEx() == KeyEvent.CTRL_DOWN_MASK && evt.getKeyCode() == KeyEvent.VK_S) {
+                    Drawer.action = Action.EXIT;
                     frame.dispose();
                     snippetController.saveShot(image);
                 }
@@ -54,22 +58,26 @@ public class Sticker extends JComponent implements MouseListener, MouseMotionLis
         };
         this.snippetController = sc;
         image = snippetController.getImage();
+        imageWidth = image.getWidth();
+        imageHeight = image.getHeight();
+        this.scaledImage = image.getScaledInstance(imageWidth, -1, Image.SCALE_AREA_AVERAGING);
+
         this.frame = new JFrame();
+        this.setBorder(unpressedBorder);
+
         frame.setTitle(String.valueOf(++IMAGE_ID));
-        frame.setIconImage(MainClass.ICON);
-        frame.setSize(image.getWidth(), image.getHeight());
-        frame.setLocationRelativeTo(null);
+        frame.setIconImages(MainClass.ICONS);
         frame.getContentPane().add(this);
         frame.setUndecorated(true);
         frame.setCursor(new Cursor(Cursor.MOVE_CURSOR));
         frame.setAlwaysOnTop(true);
         frame.setVisible(true);
-        this.setBorder(unpressedBorder);
         frame.addMouseListener(this);
         frame.addMouseMotionListener(this);
         frame.addKeyListener(this);
         frame.addWindowListener(this);
         Toolkit.getDefaultToolkit().addAWTEventListener(listener, KeyEvent.KEY_EVENT_MASK);
+
 
         circleCopy = new Circle(this, "copy");
         circleDelete = new Circle(this, "delete");
@@ -86,19 +94,26 @@ public class Sticker extends JComponent implements MouseListener, MouseMotionLis
         yMinDelete = circleDelete.getAbsoluteLocation().getY();
         yMaxDelete = circleDelete.getAbsoluteLocation().getY()+circleDelete.frame.getHeight();
 
+        frame.setSize(imageWidth, imageHeight);
+        frame.setLocationRelativeTo(null);
     }
 
     public void paintComponent(Graphics g)
     {
-        Graphics2D g2d = (Graphics2D)g;
-        g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-        g2d.drawImage(image, null, 0, 0);
-
+        super.paintComponent(g);
+        g.drawImage(this.scaledImage, 0, 0, null);
+//        Graphics2D g2d = (Graphics2D)g;
+//        g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+//        g2d.drawImage(image, null, 0, 0);
     }
 
-    public BufferedImage getImage()
+    private void rescale(int x)
     {
-        return image;
+        this.scaledImage = image.getScaledInstance(x, -1, Image.SCALE_AREA_AVERAGING);
+        this.imageWidth = scaledImage.getWidth(this);
+        this.imageHeight = scaledImage.getHeight(this);
+        repaint();
+        frame.setSize(this.imageWidth, this.imageHeight);
     }
 
     public void clearUp()
@@ -110,7 +125,7 @@ public class Sticker extends JComponent implements MouseListener, MouseMotionLis
         if (!WideKeyListener.FROM_WIDE_KEY_LISTENER)
         {
             this.frame.dispose();
-            this.snippetController.homeGui.Frame.setVisible(true);
+            this.snippetController.homeGui.frame.setVisible(true);
         }
         else
         {
@@ -119,18 +134,24 @@ public class Sticker extends JComponent implements MouseListener, MouseMotionLis
     }
 
     @Override
-    public void mouseClicked(MouseEvent e) {}
-
-    @Override
     public void mousePressed(MouseEvent e) {
-        initX = e.getX();
-        initY = e.getY();
+        if (frame.getCursor().getType() == Cursor.E_RESIZE_CURSOR)
+        {
+            Sticker.RESIZE_PRESSED = true;
+            return;
+        }
+        else
+        {
+            Sticker.RESIZE_PRESSED = false;
+        }
+        xInit = e.getX();
+        yInit = e.getY();
         this.setBorder(pressedBorder);
     }
 
     @Override
     public void mouseReleased(MouseEvent e) {
-        if(xMouse >= xMinCopy && xMouse <= xMaxCopy && yMouse >= yMinCopy && yMouse <= yMaxCopy)
+        if (xMouse >= xMinCopy && xMouse <= xMaxCopy && yMouse >= yMinCopy && yMouse <= yMaxCopy)
         {
             clearUp();
             ClipboardController.setClipboard(image);
@@ -147,16 +168,15 @@ public class Sticker extends JComponent implements MouseListener, MouseMotionLis
     }
 
     @Override
-    public void mouseEntered(MouseEvent e) {}
-
-    @Override
-    public void mouseExited(MouseEvent e) {}
-
-    @Override
     public void mouseDragged(MouseEvent e) {
+        if (Sticker.RESIZE_PRESSED)
+        {
+            rescale(e.getX());
+            return;
+        }
         xMouse = e.getXOnScreen();
         yMouse = e.getYOnScreen();
-        frame.setLocation(xMouse-initX, yMouse-initY);
+        frame.setLocation(xMouse - xInit, yMouse - yInit);
         this.setBorder(pressedBorder);
 
         if (xMouse >= SCREEN_WIDTH-RIGHT_SIDE_REGION)
@@ -181,6 +201,18 @@ public class Sticker extends JComponent implements MouseListener, MouseMotionLis
     }
 
     @Override
+    public void mouseMoved(MouseEvent e) {
+        if (e.getX() > imageWidth-10 && e.getX() < imageWidth)
+        {
+            frame.setCursor(new Cursor(Cursor.E_RESIZE_CURSOR));
+        }
+        else
+        {
+            frame.setCursor(new Cursor(Cursor.MOVE_CURSOR));
+        }
+    }
+
+    @Override
     public void keyPressed(KeyEvent e) {
         if (e.getKeyChar() == 'q')
         {
@@ -189,12 +221,18 @@ public class Sticker extends JComponent implements MouseListener, MouseMotionLis
     }
 
     @Override
+    public void mouseEntered(MouseEvent e) {}
+
+    @Override
+    public void mouseExited(MouseEvent e) {}
+
+    @Override
     public void windowClosed(WindowEvent e) {
 //        IMAGE_ID--;
     }
 
     @Override
-    public void mouseMoved(MouseEvent e) {}
+    public void mouseClicked(MouseEvent e) {}
 
     @Override
     public void keyTyped(KeyEvent e) {}
@@ -219,6 +257,7 @@ public class Sticker extends JComponent implements MouseListener, MouseMotionLis
 
     @Override
     public void windowDeactivated(WindowEvent e) {}
+
 }
 
 class Circle extends JComponent {

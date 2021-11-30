@@ -5,22 +5,25 @@ import views.MainClass;
 import java.awt.*;
 import java.awt.image.BaseMultiResolutionImage;
 import java.awt.image.BufferedImage;
-import java.io.IOException;
 import java.util.List;
-import java.util.Objects;
 
 public class Shot {
     public Robot robot;
     public BufferedImage image;
 
-    public void fullscreenShot()
+    public BufferedImage snippetHelper()
     {
-        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        this.fullShot();
+        return this.image;
+    }
+    public void fullShot()
+    {
         image = null;
         try
         {
             robot = new Robot();
-            image = robot.createScreenCapture(new Rectangle(screenSize));
+//            image = robot.createScreenCapture(new Rectangle(MainClass.SCREEN_SIZE));
+            image = robot.createScreenCapture(new Rectangle(MainClass.SCREEN_DIMENSION));
         }
         catch (Exception e)
         {
@@ -28,63 +31,31 @@ public class Shot {
         }
     }
 
-    public void snippetShot(int baseX, int baseY, int finalX, int finalY)
+    public void snippetShot(int xBase, int yBase, int xFinal, int yFinal)
     {
         Rectangle rec;
-        if (baseX < finalX && baseY < finalY)
+        int width = Math.abs(xBase-xFinal);
+        int height = Math.abs(yBase-yFinal);
+        if (xBase < xFinal && yBase < yFinal)
         {
-            rec = new Rectangle(baseX, baseY, Math.abs(baseX-finalX), Math.abs(baseY-finalY));
+            rec = new Rectangle(xBase, yBase, width, height);
         }
         else
         {
-            rec = new Rectangle(finalX, finalY, Math.abs(baseX-finalX), Math.abs(baseY-finalY));
+            rec = new Rectangle(xFinal, yFinal, width, height);
         }
         image = null;
         try
         {
             robot = new Robot();
-            BaseMultiResolutionImage imageMulti = (BaseMultiResolutionImage) robot.createMultiResolutionScreenCapture(rec);
-            List<Image> imageList = imageMulti.getResolutionVariants();
-            if (imageList.size() > 1)
-            {
-                image = (BufferedImage) imageList.get(1);
-            }
-            else
-            {
-                image = (BufferedImage) imageList.get(0);
-            }
+            BaseMultiResolutionImage multiResolutionScreenCapture = (BaseMultiResolutionImage) robot.createMultiResolutionScreenCapture(rec);
+            List<Image> imageList = multiResolutionScreenCapture.getResolutionVariants();
+            image = imageList.size() > 1 ? (BufferedImage) imageList.get(1) : (BufferedImage) imageList.get(0);
         }
         catch (Exception e)
         {
             e.printStackTrace();
         }
-    }
-
-    public BufferedImage snippetCopy()
-    {
-        BufferedImage masterImage = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_RGB);
-        Graphics2D g2d = masterImage.createGraphics();
-        g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-        g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
-        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        g2d.drawImage(image, 0, 0, masterImage.getWidth(), masterImage.getHeight(), null);
-        Font font = null;
-        try
-        {
-            font = Font.createFont(Font.TRUETYPE_FONT, Objects.requireNonNull(MainClass.loader.getResourceAsStream(FileGuard.COPYRIGHT_FONT_PATH)));
-        }
-        catch (FontFormatException | IOException fontFormatException)
-        {
-            fontFormatException.printStackTrace();
-        }
-        assert font != null;
-        g2d.setFont(font.deriveFont(16f));
-        g2d.setColor(new Color(0,0,0,170));
-        g2d.drawString("Captured with CaesarShot", 4, image.getHeight()-4);
-        g2d.setColor(Color.YELLOW);
-        g2d.drawString("Captured with CaesarShot", 5, image.getHeight()-5);
-        g2d.dispose();
-        return masterImage;
     }
 
     public BufferedImage getImage() {

@@ -1,43 +1,47 @@
 package controllers;
 
-import models.FileGuard;
+import models.FileIO;
 import models.Shot;
 import views.Home;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
 
 public class FullscreenController extends MessageDispatcher implements ActionListener {
-    private FileGuard fileGuard;
+    private FileIO fileIO;
     private Shot shot;
     private BufferedImage image;
-    public Home homeGui;
+    public Home home;
+
     public FullscreenController(Home Home)
     {
-        this.homeGui = Home;
+        this.home = Home;
         this.shot = new Shot();
     }
-    private void takeShot()
+
+    private void initialize()
     {
-        String outputDirectory = homeGui.getOutputDirectory();
-        if (!outputDirectory.equals("..."))
+        fileIO = FileIO.getInstance();
+        shot.fullShot();
+        image = shot.getImage();
+        if (Home.OUTPUT_DIR_SET)
         {
-            this.fileGuard = new FileGuard(this, outputDirectory);
+            String path = home.getOutputDir();
+            fileIO.setPath(path);
         }
         else
         {
-            this.fileGuard = new FileGuard(this);
+            fileIO.setDefaultPath();
         }
-        shot.fullscreenShot();
-        image = shot.getImage();
         try
         {
-            boolean indicator = fileGuard.writeOut(image);
+            boolean indicator = fileIO.write(image);
             if (indicator)
             {
-                messageWriter("Image has been successfully saved under\n" + fileGuard.GetImagePath(), 1);
+                messageWriter("Image has been successfully saved under\n" + fileIO.getImagePath(), 1);
             }
             else
             {
@@ -47,8 +51,9 @@ public class FullscreenController extends MessageDispatcher implements ActionLis
             ioException.printStackTrace();
         }
     }
+
     @Override
     public void actionPerformed(ActionEvent e) {
-        takeShot();
+        initialize();
     }
 }

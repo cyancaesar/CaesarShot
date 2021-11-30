@@ -1,5 +1,7 @@
 package controllers;
 
+import views.MainClass;
+
 import javax.swing.*;
 
 public class MessageDispatcher {
@@ -16,6 +18,8 @@ public class MessageDispatcher {
     }
     public static void messageWriter(String msg, String title, Icon icon)
     {
-        JOptionPane.showMessageDialog(null, msg, title, JOptionPane.PLAIN_MESSAGE, icon);
+        JFrame frame = new JFrame();
+        frame.setIconImages(MainClass.ICONS);
+        JOptionPane.showMessageDialog(frame, msg, title, JOptionPane.PLAIN_MESSAGE, icon);
     }
 }

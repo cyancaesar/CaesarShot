@@ -21,7 +21,7 @@ public class DirectoryController implements ActionListener {
         if (ResultSelection == JFileChooser.APPROVE_OPTION)
         {
             File DirectoryPath = jFileChooser.getSelectedFile();
-            HomeGui.setOutputDirectory(DirectoryPath.toString());
+            HomeGui.setOutputDir(DirectoryPath.toString());
         }
     }
 
