@@ -1,18 +1,24 @@
 # CaesarShot
-#### A utility that captures full and reginal screenshot.
+#### A utility that captures full and regional screenshot.
 #### The snippet can set on top of the screen until the user decides to copy or delete it.
 + Capture region screenshot
 + Capture full screenshot
-+ Add hover snippet on the screen
-+ The ability to copy or delete the snippet
++ Add the snippet on top of the screen
++ Copy or delete actions on the snippet
++ Toolbar for drawing and painting
++ Shortcut for quick snippet shot
 
-![MainWindow](./images/MainWindow.bmp)
+JRE 9 is bundled with the installer
 
-![RegionCapture](./images/RegionCapture.bmp)
+![UI](./images/UI.png)
 
-![ImageSnippet](./images/ImageSnippet.bmp)
+![Capture](./images/Capture.png)
 
-![DragToRight](./images/DragToRight.bmp)
+![Snippet](./images/Snippet.png)
+
+![Resize](./images/Resize.png)
+
+![Actions](./images/Actions.png)
 
 ---
 
