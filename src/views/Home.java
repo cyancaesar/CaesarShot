@@ -75,6 +75,7 @@ public class Home {
             soundBox.addItemListener(e -> {
                 int state = e.getStateChange();
                 SOUND = state == 1;
+                MainClass.playSound("cut2.wav");
             });
 
             popup.add(soundBox);

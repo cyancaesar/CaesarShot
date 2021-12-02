@@ -15,7 +15,7 @@ import java.util.List;
 
 public class Drawer extends JPanel implements MouseMotionListener, MouseListener, KeyListener, ActionListener, MouseWheelListener {
     public SnippetController snippetController;
-    public final JFrame frame;
+    public JFrame frame;
     public static Action action;
     public static Tool tool = Tool.DEFAULT;
     private static boolean CLEAR = true;
@@ -66,6 +66,7 @@ public class Drawer extends JPanel implements MouseMotionListener, MouseListener
      * lines: Line tool
      */
     private List<List<Point>> brushCurves = new ArrayList<>();
+
     private List<Point> temp_brushCurve = null;
     private List<List<Point>> linePoints = new ArrayList<>();
     private List<Point> temp_linePoint = null;
@@ -104,10 +105,11 @@ public class Drawer extends JPanel implements MouseMotionListener, MouseListener
                     if (startPoint != finalPoint)
                     {
                         if (Home.SOUND)
-                            MainClass.playSound("cut.wav");
+                            MainClass.playSound("cut2.wav");
                         Drawer.tool = Tool.DEFAULT;
                         Drawer.action = Action.SAVE_IMAGE;
                         snippetController.shotSnippet(xMin, yMin, xMax, yMax);
+                        Toolkit.getDefaultToolkit().removeAWTEventListener(this);
                         frame.dispose();
                     }
                 }
@@ -118,10 +120,11 @@ public class Drawer extends JPanel implements MouseMotionListener, MouseListener
                     if (startPoint != finalPoint)
                     {
                         if (Home.SOUND)
-                            MainClass.playSound("cut.wav");
+                             MainClass.playSound("cut2.wav");
                         Drawer.tool = Tool.DEFAULT;
                         Drawer.action = Action.HOVER_SNIPPET;
                         snippetController.shotSnippet(xMin, yMin, xMax, yMax);
+                        Toolkit.getDefaultToolkit().removeAWTEventListener(this);
                         frame.dispose();
                     }
                 }
@@ -132,10 +135,11 @@ public class Drawer extends JPanel implements MouseMotionListener, MouseListener
                     if (startPoint != finalPoint)
                     {
                         if (Home.SOUND)
-                            MainClass.playSound("cut.wav");
+                            MainClass.playSound("cut2.wav");
                         Drawer.tool = Tool.DEFAULT;
                         Drawer.action = Action.COPY_IMAGE;
                         snippetController.shotSnippet(xMin, yMin, xMax, yMax);
+                        Toolkit.getDefaultToolkit().removeAWTEventListener(this);
                         frame.dispose();
                     }
                 }
@@ -166,6 +170,7 @@ public class Drawer extends JPanel implements MouseMotionListener, MouseListener
                     Drawer.tool = Tool.DEFAULT;
                     Drawer.action = Action.EXIT;
                     repaint();
+                    Toolkit.getDefaultToolkit().removeAWTEventListener(this);
                     frame.dispose();
                 }
                 // When Ctrl + Z is pressed
@@ -207,7 +212,6 @@ public class Drawer extends JPanel implements MouseMotionListener, MouseListener
         frame.setVisible(true);
         frame.setAlwaysOnTop(true);
     }
-
 
     public void paintComponent(Graphics g)
     {

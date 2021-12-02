@@ -129,8 +129,6 @@ public class SnippetController extends MessageDispatcher implements ActionListen
         {
             image = shot.getImage();
             new Sticker(this);
-//            IntelliJTheme.install(MainClass.loader.getResourceAsStream("assets/space-gray.theme.json"));
-//            SwingUtilities.updateComponentTreeUI(MainClass.MAIN_FRAME.frame);
         }
         else if (Drawer.action == Action.COPY_IMAGE)
         {

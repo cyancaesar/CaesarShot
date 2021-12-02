@@ -1,6 +1,7 @@
 package controllers;
 
 import views.Home;
+import views.MainClass;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -16,8 +17,10 @@ public class DirectoryController implements ActionListener {
     public void DirectoryChooserDialog()
     {
         JFileChooser jFileChooser = new JFileChooser();
+        JFrame frame = new JFrame();
+        frame.setIconImages(MainClass.ICONS);
         jFileChooser.setFileSelectionMode(1);
-        int ResultSelection = jFileChooser.showDialog(null, "Select Directory");
+        int ResultSelection = jFileChooser.showDialog(frame, "Select Directory");
         if (ResultSelection == JFileChooser.APPROVE_OPTION)
         {
             File DirectoryPath = jFileChooser.getSelectedFile();

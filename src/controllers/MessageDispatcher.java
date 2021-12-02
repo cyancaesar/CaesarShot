@@ -9,11 +9,15 @@ public class MessageDispatcher {
     {
         if (type == 0)
         {
-            JOptionPane.showMessageDialog(null, msg, "Error", type);
+            JFrame frame = new JFrame();
+            frame.setIconImages(MainClass.ICONS);
+            JOptionPane.showMessageDialog(frame, msg, "Error", type);
         }
         else if (type == 1)
         {
-            JOptionPane.showMessageDialog(null, msg, "Success", type);
+            JFrame frame = new JFrame();
+            frame.setIconImages(MainClass.ICONS);
+            JOptionPane.showMessageDialog(frame, msg, "Success", type);
         }
     }
     public static void messageWriter(String msg, String title, Icon icon)

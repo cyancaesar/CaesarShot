@@ -6,6 +6,8 @@ public class Config implements Serializable {
     private Integer shortcutCode = 36; // PRINT SCREEN key code
     private static Config CONFIG = null;
 
+//    private Config() {}
+
     public void setShortcutCode(Integer code)
     {
         this.shortcutCode = code;

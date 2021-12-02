@@ -3,25 +3,25 @@ package views;
 import com.formdev.flatlaf.*;
 import models.FileIO;
 
-import javax.sound.sampled.AudioInputStream;
-import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.Clip;
+import javax.sound.sampled.*;
 import javax.swing.*;
 import java.awt.*;
 import java.io.BufferedInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 
 public class MainClass {
-    public final static String VERSION = "1.1";
+    public final static String VERSION = "1.2";
     public final static ClassLoader loader = Thread.currentThread().getContextClassLoader();
     public final static Image ICON_16 = Toolkit.getDefaultToolkit().getImage(loader.getResource("assets/icon-16.png"));
     public final static Image ICON_32 = Toolkit.getDefaultToolkit().getImage(loader.getResource("assets/icon-32.png"));
     public final static Image ICON_64 = Toolkit.getDefaultToolkit().getImage(loader.getResource("assets/icon-64.png"));
     public final static Image ICON_128 = Toolkit.getDefaultToolkit().getImage(loader.getResource("assets/icon-128.png"));
     public final static ArrayList<Image> ICONS = new ArrayList<>();
-    public final static Image COPY = Toolkit.getDefaultToolkit().getImage(loader.getResource("assets/copy.png"));
-    public final static Image DELETE = Toolkit.getDefaultToolkit().getImage(loader.getResource("assets/delete.png"));
+    public final static Image SAVE = Toolkit.getDefaultToolkit().getImage(loader.getResource("assets/save.png"));
+    public final static Image COPY = Toolkit.getDefaultToolkit().getImage(loader.getResource("assets/copy2.png"));
+    public final static Image DELETE = Toolkit.getDefaultToolkit().getImage(loader.getResource("assets/delete2.png"));
     public final static Image BRUSH_TOOL = Toolkit.getDefaultToolkit().getImage(loader.getResource("assets/brush.png"));
     public final static Image RECTANGLE_TOOL = Toolkit.getDefaultToolkit().getImage(loader.getResource("assets/rectangle.png"));
     public final static Image LINE_TOOL = Toolkit.getDefaultToolkit().getImage(loader.getResource("assets/line.png"));
@@ -63,19 +63,33 @@ public class MainClass {
         SwingUtilities.invokeLater(run);
     }
 
-    public static synchronized void playSound(final String url) {
-        new Thread(() -> {
+    public synchronized static void playSound(final String url) {
             try {
                 InputStream audioSrc = loader.getResourceAsStream("assets/" + url);
                 assert audioSrc != null;
                 InputStream audioSrcBuffer = new BufferedInputStream(audioSrc);
                 AudioInputStream audioStream = AudioSystem.getAudioInputStream(audioSrcBuffer);
-                Clip clip = AudioSystem.getClip();
+                AudioFormat format = audioStream.getFormat();
+                DataLine.Info info = new DataLine.Info(Clip.class, format);
+                Clip clip = (Clip) AudioSystem.getLine(info);
+                clip.addLineListener(event -> {
+                    LineEvent.Type type = event.getType();
+                    if (type == LineEvent.Type.STOP) {
+                        clip.close();
+                        try
+                        {
+                            audioSrcBuffer.close();
+                        }
+                        catch (IOException e)
+                        {
+                            e.printStackTrace();
+                        }
+                    }
+                });
                 clip.open(audioStream);
                 clip.start();
             } catch (Exception e) {
                 System.err.println(e.getMessage());
             }
-        }).start();
     }
 }
