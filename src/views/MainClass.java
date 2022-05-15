@@ -13,7 +13,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 
 public class MainClass {
-    public final static String VERSION = "1.2";
+    public final static String VERSION = "1.3.1";
     public final static ClassLoader loader = Thread.currentThread().getContextClassLoader();
     public final static Image ICON_16 = Toolkit.getDefaultToolkit().getImage(loader.getResource("assets/icon-16.png"));
     public final static Image ICON_32 = Toolkit.getDefaultToolkit().getImage(loader.getResource("assets/icon-32.png"));
