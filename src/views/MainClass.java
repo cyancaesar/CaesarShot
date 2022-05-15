@@ -1,6 +1,7 @@
 package views;
 
 import com.formdev.flatlaf.*;
+import controllers.FullscreenController;
 import models.FileIO;
 
 import javax.sound.sampled.*;
@@ -27,13 +28,20 @@ public class MainClass {
     public final static Image LINE_TOOL = Toolkit.getDefaultToolkit().getImage(loader.getResource("assets/line.png"));
     public final static Image UNDO_TOOL = Toolkit.getDefaultToolkit().getImage(loader.getResource("assets/undo.png"));
     public final static Image COLOR_TOOL = Toolkit.getDefaultToolkit().getImage(loader.getResource("assets/color-wheel.png"));
-    private final static GraphicsDevice[] GD = GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices();
+    public final static GraphicsDevice[] GD = GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices();
     public static Dimension SCREEN_DIMENSION;
+
+//    For Timing
+    public static long START;
+    public static long FINISH;
+    public static long TIME_ELAPSED;
+
 
     public static Home MAIN_FRAME;
 
     public static void main(String[] args) {
         System.out.println("Java version: " + System.getProperty("java.version"));
+
         int SCREEN_WIDTH = 0;
         int SCREEN_HEIGHT = 0;
         for (GraphicsDevice gd : GD)
@@ -49,6 +57,7 @@ public class MainClass {
         Runnable run = () -> {
             try
             {
+                UIManager.put("Button.arc", 4);
                 JFrame.setDefaultLookAndFeelDecorated(true);
                 JDialog.setDefaultLookAndFeelDecorated(true);
                 FileIO.getInstance().readConfig();

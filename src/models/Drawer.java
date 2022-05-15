@@ -6,6 +6,8 @@ import views.MainClass;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.geom.Ellipse2D;
+import java.awt.geom.Line2D;
 import java.util.*;
 import java.awt.event.*;
 import java.awt.geom.Area;
@@ -14,18 +16,21 @@ import java.awt.image.BufferedImage;
 import java.util.List;
 
 public class Drawer extends JPanel implements MouseMotionListener, MouseListener, KeyListener, ActionListener, MouseWheelListener {
+
     public SnippetController snippetController;
     public JFrame frame;
+
     public static Action action;
     public static Tool tool = Tool.DEFAULT;
     private static boolean CLEAR = true;
+
     private static final String[] INSTRUCTION_1 = new String[] {"Sticky Snippet", "[CTRL + H]"};
     private static final String[] INSTRUCTION_2 = new String[] {"Save Snippet", "[CTRL + S]"};
     private static final String[] INSTRUCTION_3 = new String[] {"Copy Snippet", "[CTRL + C]"};
     private static final String[] INSTRUCTION_4 = new String[] {"Reset Area", "[ESC]"};
     private static final String[] INSTRUCTION_5 = new String[] {"Quit", "[Q]"};
     private static final String[] INSTRUCTION_6 = new String[] {"Undo", "[CTRL + Z]"};
-    private static  final String[] STATE = new String[] {"State", "Default"};
+    private static final String[] STATE = new String[] {"State", "Default"};
     private static final String FONT_NAME = "Segoe UI";
     private static final float[] DASH_OPTION = new float[] {2.0f};
     private static final BasicStroke DASHED_STROKE = new BasicStroke(
@@ -35,16 +40,20 @@ public class Drawer extends JPanel implements MouseMotionListener, MouseListener
             10.0f,
             DASH_OPTION,
             10.0f);
-    private final static int RIGHT_CLICK = 4096;
-    private final static int LEFT_CLICK = 1024;
-    private static boolean IS_LEFT_CLICKED = false;
+
+    private static boolean IS_LEFT_PRESSED = false;
     private static boolean IS_DRAGGING = false;
+    private static boolean IS_CROPPING = false;
 
     public static BufferedImage screenImage;
 
     private Point startPoint = new Point(0,0);
     private Point currentPoint = new Point(0,0);
     private Point finalPoint = new Point(0,0);
+
+    private Point persistantStartPoint = new Point(0,0);
+    private Point persistantCurrentPoint = new Point(0,0);
+
     private int xMin;
     private int yMin;
     private int xMax;
@@ -56,28 +65,28 @@ public class Drawer extends JPanel implements MouseMotionListener, MouseListener
 
     private Point oPaint;
     private Point cPaint;
-    private Point fPaint;
 
     private static int STROKE_WIDTH = 3;
-    private Vector<Tool> paintingType = new Vector<>();
+    private final Vector<Tool> paintingType = new Vector<>();
     /*
      * Painting points
      * paintCurves: Draw tool
      * lines: Line tool
      */
-    private List<List<Point>> brushCurves = new ArrayList<>();
-
+    private final List<List<Point>> brushCurves = new ArrayList<>();
     private List<Point> temp_brushCurve = null;
-    private List<List<Point>> linePoints = new ArrayList<>();
+    private Map<String, Integer> brush_properties = null;
+    private final List<Map<String, Integer>> brush_properties_list = new ArrayList<>();
+
+
+    private final List<List<Point>> linePoints = new ArrayList<>();
     private List<Point> temp_linePoint = null;
-    private List<List<Point>> rectanglePoints = new ArrayList<>();
+    private final List<List<Point>> rectanglePoints = new ArrayList<>();
     private List<Point> temp_rectanglePoints = null;
 
-    private JPanel toolsPanel;
     private JButton brushTool;
     private JButton lineTool;
     private JButton rectangleTool;
-    private JButton removeTool;
     private JButton undoTool;
 
     public Drawer(SnippetController snippetController, BufferedImage image)
@@ -85,6 +94,7 @@ public class Drawer extends JPanel implements MouseMotionListener, MouseListener
         JFrame.setDefaultLookAndFeelDecorated(false);
         this.snippetController = snippetController;
         screenImage = image;
+        setIgnoreRepaint(true);
 
         /*
          * Toolbar creation
@@ -149,8 +159,11 @@ public class Drawer extends JPanel implements MouseMotionListener, MouseListener
                 {
                     Drawer.tool = Tool.DEFAULT;
                     frame.setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
-                    currentPoint = startPoint;
-                    finalPoint = startPoint;
+                    startPoint = new Point(0,0);
+                    currentPoint = new Point(0,0);
+                    finalPoint = new Point(0,0);
+                    persistantStartPoint = new Point(0,0);
+                    persistantCurrentPoint = new Point(0,0);
                     paintingType.clear();
                     brushCurves.clear();
                     linePoints.clear();
@@ -185,14 +198,17 @@ public class Drawer extends JPanel implements MouseMotionListener, MouseListener
                 }
             }
         };
+
+        // Attach the listener
         Toolkit.getDefaultToolkit().addAWTEventListener(listener, KeyEvent.KEY_EVENT_MASK);
 
         // JFrame initialization
         frame = new JFrame();
         frame.setIconImages(MainClass.ICONS);
-        frame.setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
         frame.setSize(MainClass.SCREEN_DIMENSION);
+//        MainClass.GD[0].setFullScreenWindow(frame);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
         // All the listeners is attached to the panel
         frame.addMouseMotionListener(this);
         frame.addMouseListener(this);
@@ -211,29 +227,49 @@ public class Drawer extends JPanel implements MouseMotionListener, MouseListener
         frame.setUndecorated(true);
         frame.setVisible(true);
         frame.setAlwaysOnTop(true);
+
     }
 
     public void paintComponent(Graphics g)
     {
+        // Initializing Graphics objects
         super.paintComponent(g);
         Graphics2D g2d = (Graphics2D) g.create();
+        Graphics2D g2dDrawing = (Graphics2D) g.create();
 
-        paintWidth = Math.abs(currentPoint.x - startPoint.x);
-        paintHeight = Math.abs(currentPoint.y - startPoint.y);
-        x = Math.min(currentPoint.x, startPoint.x);
-        y = Math.min(currentPoint.y, startPoint.y);
+        if (IS_CROPPING)
+        {
+            paintWidth = Math.abs(currentPoint.x - startPoint.x);
+            paintHeight = Math.abs(currentPoint.y - startPoint.y);
+            x = Math.min(currentPoint.x, startPoint.x);
+            y = Math.min(currentPoint.y, startPoint.y);
+        }
+        else
+        {
+            paintWidth = Math.abs(persistantCurrentPoint.x - persistantStartPoint.x);
+            paintHeight = Math.abs(persistantCurrentPoint.y - persistantStartPoint.y);
+            x = Math.min(persistantCurrentPoint.x, persistantStartPoint.x);
+            y = Math.min(persistantCurrentPoint.y, persistantStartPoint.y);
+        }
 
         g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,RenderingHints.VALUE_TEXT_ANTIALIAS_GASP);
         g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+        g2dDrawing.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g2dDrawing.setColor(Color.ORANGE);
+
+        // Draw the background frame
         g2d.drawImage(screenImage, null, 0,0);
 
+        // Drawing the rectangle
         Rectangle2D rectangleNotToDrawIn = new Rectangle2D.Double(x, y, paintWidth, paintHeight);
         Area outside = calculateRectOutside(rectangleNotToDrawIn);
         g2d.setPaint(new Color(0,0,0,150));
         g2d.setClip(outside);
         g2d.fillRect(0,0,getWidth(),getHeight());
 
+        // Instruction menu
         g2d.setFont(new Font(FONT_NAME, Font.BOLD, 16));
         FontMetrics textMetrics = g2d.getFontMetrics();
         g2d.setColor(Color.WHITE);
@@ -255,25 +291,16 @@ public class Drawer extends JPanel implements MouseMotionListener, MouseListener
         g2d.drawString(STATE[1], 100+175-textMetrics.stringWidth(STATE[1])/2, 200);
         g2d.setColor(Color.WHITE);
 
-        Graphics2D gImage = (Graphics2D) g.create();
-        gImage.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION,
-                RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY);
-        gImage.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
-                RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-        gImage.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-                RenderingHints.VALUE_ANTIALIAS_ON);
-        gImage.setStroke(new BasicStroke(
-                STROKE_WIDTH, BasicStroke.CAP_ROUND,
-                BasicStroke.JOIN_ROUND));
-        gImage.setColor(Color.RED);
-
+        int counter = 0;
         for (List<Point> curve : brushCurves)
         {
-            drawCurve(gImage, curve);
+            g2dDrawing.setStroke(new BasicStroke(brush_properties_list.get(counter).get("SIZE")));
+            drawCurve(g2dDrawing, curve);
+            counter++;
         }
         for (List<Point> line : linePoints)
         {
-            gImage.drawLine(line.get(0).x, line.get(0).y, line.get(1).x, line.get(1).y);
+            g2dDrawing.drawLine(line.get(0).x, line.get(0).y, line.get(1).x, line.get(1).y);
         }
         for (List<Point> rectangle : rectanglePoints)
         {
@@ -285,21 +312,23 @@ public class Drawer extends JPanel implements MouseMotionListener, MouseListener
             int height = Math.abs(yBase - yFinal);
             int xRec = Math.min(xBase, xFinal);
             int yRec = Math.min(yBase, yFinal);
-            gImage.drawRect(xRec, yRec, width, height);
+            g2dDrawing.drawRect(xRec, yRec, width, height);
         }
 
         if (tool == Tool.BRUSH)
         {
-            if (temp_brushCurve != null) {
-                gImage.setColor(Color.CYAN);
-                drawCurve(gImage, temp_brushCurve);
+            if (temp_brushCurve != null)
+            {
+                g2dDrawing.setStroke(new BasicStroke(brush_properties_list.get(counter).get("SIZE")));
+                g2dDrawing.setColor(Color.CYAN);
+                drawCurve(g2dDrawing, temp_brushCurve);
             }
         }
         else if (tool == Tool.LINE)
         {
             if (temp_linePoint != null)
             {
-                gImage.drawLine(temp_linePoint.get(0).x, temp_linePoint.get(0).y, temp_linePoint.get(1).x, temp_linePoint.get(1).y);
+                g2dDrawing.drawLine(temp_linePoint.get(0).x, temp_linePoint.get(0).y, temp_linePoint.get(1).x, temp_linePoint.get(1).y);
             }
         }
         else if (tool == Tool.RECTANGLE)
@@ -314,11 +343,13 @@ public class Drawer extends JPanel implements MouseMotionListener, MouseListener
                 int height = Math.abs(yBase - yFinal);
                 int xRec = Math.min(xBase, xFinal);
                 int yRec = Math.min(yBase, yFinal);
-                gImage.drawRect(xRec, yRec, width, height);
+                g2dDrawing.drawRect(xRec, yRec, width, height);
             }
         }
-//        gImage.dispose();
 
+        // Reset the clip
+        g2d.setClip(0,0, getWidth(), getHeight());
+        // Drawing the corners & dimension
         if (!CLEAR)
         {
             g2d.drawRect(x-20, y-20, 20, 0); // Top left x
@@ -335,12 +366,14 @@ public class Drawer extends JPanel implements MouseMotionListener, MouseListener
 
             g2d.setFont(new Font(FONT_NAME, Font.BOLD, 16));
             String recDimensions = paintWidth + "x" + paintHeight;
-            g2d.setColor(new Color(255,255,255,150));
+            g2d.setColor(new Color(255,255,255,255));
             g2d.drawString(recDimensions, x-20, y-26);
         }
-        gImage.dispose();
+        g2dDrawing.dispose();
     }
-
+    ///////////////////////////
+    // End of paintComponent
+    //////////////////////////
     private void setupTools()
     {
         brushTool = new JButton();
@@ -406,7 +439,8 @@ public class Drawer extends JPanel implements MouseMotionListener, MouseListener
         }
     }
 
-    private Area calculateRectOutside(Rectangle2D r) {
+    private Area calculateRectOutside(Rectangle2D r)
+    {
         Area outside = new Area(new Rectangle2D.Double(0, 0, getWidth(), getHeight()));
         outside.subtract(new Area(r));
         return outside;
@@ -434,47 +468,52 @@ public class Drawer extends JPanel implements MouseMotionListener, MouseListener
     }
 
     @Override
-    public void mousePressed(MouseEvent e) {
-        if (e.getModifiersEx() != LEFT_CLICK)
+    public void mousePressed(MouseEvent e)
+    {
+        if (!SwingUtilities.isLeftMouseButton(e))
         {
-            IS_LEFT_CLICKED = false;
+            IS_LEFT_PRESSED = false;
             return;
         }
-        if (tool == Tool.DEFAULT)
+        switch (tool)
         {
-            startPoint = e.getPoint();
-        }
-        else if (tool == Tool.LINE)
-        {
-            oPaint = e.getPoint();
-            temp_linePoint = new ArrayList<>();
-            temp_linePoint.add(oPaint);
-        }
-        else if (tool == Tool.BRUSH)
-        {
-            oPaint = e.getPoint();
-            temp_brushCurve = new ArrayList<>();
-            temp_brushCurve.add(oPaint);
-            repaint();
-        }
-        else if (tool == Tool.RECTANGLE)
-        {
-            oPaint = e.getPoint();
-            temp_rectanglePoints = new ArrayList<>();
-            temp_rectanglePoints.add(oPaint);
+            case DEFAULT:
+                startPoint = e.getPoint();
+                break;
+            case LINE:
+                oPaint = e.getPoint();
+                temp_linePoint = new ArrayList<>();
+                temp_linePoint.add(oPaint);
+                break;
+            case BRUSH:
+                oPaint = e.getPoint();
+                temp_brushCurve = new ArrayList<>();
+                temp_brushCurve.add(oPaint);
+                brush_properties = new HashMap<>();
+                brush_properties.put("SIZE", STROKE_WIDTH);
+                brush_properties_list.add(brush_properties);
+                repaint();
+                break;
+            case RECTANGLE:
+                oPaint = e.getPoint();
+                temp_rectanglePoints = new ArrayList<>();
+                temp_rectanglePoints.add(oPaint);
+                break;
         }
         CLEAR = false;
-        IS_LEFT_CLICKED = true;
+        IS_LEFT_PRESSED = true;
         IS_DRAGGING = false;
         hideTools();
     }
 
     @Override
-    public void mouseDragged(MouseEvent e) {
-        if (!IS_LEFT_CLICKED)
+    public void mouseDragged(MouseEvent e)
+    {
+        if (!IS_LEFT_PRESSED)
             return;
         if (tool == Tool.DEFAULT)
         {
+            IS_CROPPING = true;
             currentPoint = e.getPoint();
         }
         else if (tool == Tool.LINE)
@@ -502,13 +541,19 @@ public class Drawer extends JPanel implements MouseMotionListener, MouseListener
     }
 
     @Override
-    public void mouseReleased(MouseEvent e) {
+    public void mouseReleased(MouseEvent e)
+    {
         if (!IS_DRAGGING)
             return;
-        if (!IS_LEFT_CLICKED)
+        if (!IS_LEFT_PRESSED)
             return;
+
+        persistantStartPoint = startPoint;
+        persistantCurrentPoint = currentPoint;
+
         if (tool == Tool.DEFAULT)
         {
+            IS_CROPPING = true;
             finalPoint = e.getPoint();
         }
         else if (tool == Tool.LINE)
@@ -529,6 +574,7 @@ public class Drawer extends JPanel implements MouseMotionListener, MouseListener
             brushCurves.add(temp_brushCurve);
             temp_brushCurve = null;
             paintingType.add(tool);
+            brush_properties = null;
         }
         else if (tool == Tool.RECTANGLE)
         {
@@ -546,16 +592,14 @@ public class Drawer extends JPanel implements MouseMotionListener, MouseListener
         yMin = Math.min(startPoint.y, finalPoint.y);
         xMax = Math.max(startPoint.x, finalPoint.x);
         yMax = Math.max(startPoint.y, finalPoint.y);
-        fPaint = finalPoint;
         repaint();
         showTools();
     }
 
     @Override
-    public void mouseMoved(MouseEvent e) {
-//        int x = e.getX()+5;
-//        int y = e.getY()+5;
-//        cursorLabel.setBounds(x, y, 100, 50);
+    public void mouseMoved(MouseEvent e)
+    {
+        IS_CROPPING = false;
     }
 
     @Override
@@ -632,11 +676,14 @@ public class Drawer extends JPanel implements MouseMotionListener, MouseListener
 
     @Override
     public void mouseWheelMoved(MouseWheelEvent e) {
-//        System.out.println(e.getWheelRotation());
-//        if (!(STROKE_WIDTH <= 0))
-//        {
-//            STROKE_WIDTH += e.getWheelRotation();
-//        }
-        // Not implemented
+        if (STROKE_WIDTH >= 1)
+        {
+            if (STROKE_WIDTH <= 10)
+                STROKE_WIDTH += e.getWheelRotation();
+            else
+                STROKE_WIDTH -= Math.abs(e.getWheelRotation());
+        }
+        else
+            STROKE_WIDTH = 1;
     }
 }

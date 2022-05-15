@@ -13,8 +13,17 @@ public class Shot {
 
     public BufferedImage snippetHelper()
     {
-        this.fullShot();
-        return this.image;
+        BufferedImage imageTemp = null;
+        try
+        {
+            imageTemp = new Robot().createScreenCapture(new Rectangle(MainClass.SCREEN_DIMENSION));
+            image = imageTemp;
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+        return imageTemp;
     }
     public void fullShot()
     {
@@ -22,7 +31,6 @@ public class Shot {
         try
         {
             robot = new Robot();
-//            image = robot.createScreenCapture(new Rectangle(MainClass.SCREEN_SIZE));
             image = robot.createScreenCapture(new Rectangle(MainClass.SCREEN_DIMENSION));
         }
         catch (Exception e)
@@ -60,5 +68,9 @@ public class Shot {
 
     public BufferedImage getImage() {
         return image;
+    }
+    public void setImage(BufferedImage image)
+    {
+        this.image = image;
     }
 }

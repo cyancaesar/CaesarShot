@@ -25,7 +25,7 @@ public class CircleWindow extends JPanel implements MouseListener
     private static final Color BORDER_COLOR = new Color(112, 2, 146);
     public static boolean CLEAR_WINDOWS = false;
 
-    private JWindow window;
+    public JWindow window;
     private Sticker sticker;
     private Ellipse2D circle;
     private int circleRadius;
@@ -37,6 +37,7 @@ public class CircleWindow extends JPanel implements MouseListener
     private TimingTarget targetOut;
     private Point startPoint;
     private Point finalPoint;
+    private int xCurrent;
     private Image icon;
     public boolean inRange = false;
 
@@ -57,6 +58,8 @@ public class CircleWindow extends JPanel implements MouseListener
 
         startPoint = new Point(Sticker.SCREEN_WIDTH+300,VERTICAL_CENTER);
         finalPoint = new Point(420,VERTICAL_CENTER);
+
+        xCurrent = startPoint.x;
 
         if (CIRCLES == 1)
         {
@@ -102,7 +105,7 @@ public class CircleWindow extends JPanel implements MouseListener
         };
         animatorIn = new Animator(duration, targetIn);
         animatorIn.setResolution(0);
-        animatorOut = new Animator(duration+1000, targetOut);
+        animatorOut = new Animator(duration+3000, targetOut);
         animatorOut.setResolution(0);
 
         setEasingIn(new Easing() {
@@ -114,7 +117,7 @@ public class CircleWindow extends JPanel implements MouseListener
         setEasingOut(new Easing() {
             @Override
             public float easing(float f) {
-                return EasingFunction.easeOutBounce(f);
+                return EasingFunction.easeOutExpo(f);
             }
         });
     }
@@ -183,11 +186,14 @@ public class CircleWindow extends JPanel implements MouseListener
     private void animateIn()
     {
         int x =  startPoint.x - (int) (finalPoint.x * animate);
+        xCurrent = x;
         window.setLocation(x, finalPoint.y);
     }
 
     private void animateOut()
     {
+//        System.out.println("OUT");
+//        int x =  (startPoint.x - finalPoint.x) + (int) (finalPoint.x * animate);
         int x =  (startPoint.x - finalPoint.x) + (int) (finalPoint.x * animate);
         window.setLocation(x, finalPoint.y);
     }

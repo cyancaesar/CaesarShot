@@ -6,6 +6,7 @@ import models.FileIO;
 import models.Shot;
 import models.Sticker;
 import views.Home;
+import views.MainClass;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;

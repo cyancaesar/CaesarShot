@@ -12,7 +12,7 @@ import java.awt.event.*;
 import java.awt.image.BufferedImage;
 
 public class Sticker extends JComponent implements MouseListener, MouseMotionListener, KeyListener, WindowListener {
-    protected static int SCREEN_WIDTH = Toolkit.getDefaultToolkit().getScreenSize().width;
+    protected static int SCREEN_WIDTH = MainClass.SCREEN_DIMENSION.width;
     protected static int SCREEN_HEIGHT = Toolkit.getDefaultToolkit().getScreenSize().height;
     private static final int RIGHT_SIDE_REGION = SCREEN_WIDTH/7;
     private static int IMAGE_ID = 0;
@@ -129,7 +129,8 @@ public class Sticker extends JComponent implements MouseListener, MouseMotionLis
     }
 
     @Override
-    public void mousePressed(MouseEvent e) {
+    public void mousePressed(MouseEvent e)
+    {
         if (frame.getCursor().getType() == Cursor.NW_RESIZE_CURSOR || frame.getCursor().getType() == Cursor.NE_RESIZE_CURSOR)
         {
             Sticker.RESIZE_PRESSED = true;
@@ -145,39 +146,18 @@ public class Sticker extends JComponent implements MouseListener, MouseMotionLis
     }
 
     @Override
-    public void mouseReleased(MouseEvent e)
+    public void mouseDragged(MouseEvent e)
     {
-        if (copyWindow.inRange)
+        if (!CircleWindow.isShowing)
         {
-            exit();
-            ClipboardController.setClipboard(image);
+            copyWindow.window.setAlwaysOnTop(false);
+            saveWindow.window.setAlwaysOnTop(false);
+            deleteWindow.window.setAlwaysOnTop(false);
+            copyWindow.window.setAlwaysOnTop(true);
+            saveWindow.window.setAlwaysOnTop(true);
+            deleteWindow.window.setAlwaysOnTop(true);
         }
-        else if (saveWindow.inRange)
-        {
-            Drawer.action = Action.EXIT;
-            exit();
-            snippetController.saveShot(image);
-            frame.dispose();
-        }
-        else if (deleteWindow.inRange)
-        {
-            exit();
-        }
-        else
-        {
-            if (CircleWindow.isShowing)
-            {
-                copyWindow.animatorIn.stop();
-                deleteWindow.animatorIn.stop();
-                copyWindow.startOut();
-                deleteWindow.startOut();
-            }
-        }
-        this.setBorder(unpressedBorder);
-    }
 
-    @Override
-    public void mouseDragged(MouseEvent e) {
         if (Sticker.RESIZE_PRESSED)
         {
             setBorder(pressedBorder);
@@ -191,6 +171,7 @@ public class Sticker extends JComponent implements MouseListener, MouseMotionLis
             }
             return;
         }
+
         xMouse = e.getXOnScreen();
         yMouse = e.getYOnScreen();
         frame.setLocation(xMouse - xInit, yMouse - yInit);
@@ -216,7 +197,42 @@ public class Sticker extends JComponent implements MouseListener, MouseMotionLis
     }
 
     @Override
-    public void mouseMoved(MouseEvent e) {
+    public void mouseReleased(MouseEvent e)
+    {
+        if (copyWindow.inRange)
+        {
+            ClipboardController.setClipboard(image);
+            exit();
+        }
+        else if (saveWindow.inRange)
+        {
+            Drawer.action = Action.EXIT;
+            exit();
+            snippetController.saveShot(image);
+            frame.dispose();
+        }
+        else if (deleteWindow.inRange)
+        {
+            exit();
+        }
+        else
+        {
+            if (CircleWindow.isShowing)
+            {
+                saveWindow.animatorIn.stop();
+                copyWindow.animatorIn.stop();
+                deleteWindow.animatorIn.stop();
+                saveWindow.startOut();
+                copyWindow.startOut();
+                deleteWindow.startOut();
+            }
+        }
+        this.setBorder(unpressedBorder);
+    }
+
+    @Override
+    public void mouseMoved(MouseEvent e)
+    {
         if (mouseEntered)
             setBorder(pressedBorder);
         else
@@ -237,7 +253,8 @@ public class Sticker extends JComponent implements MouseListener, MouseMotionLis
     }
 
     @Override
-    public void keyPressed(KeyEvent e) {
+    public void keyPressed(KeyEvent e)
+    {
 //        if (e.getKeyChar() == 'q')
 //        {
 //            exit();
@@ -245,13 +262,15 @@ public class Sticker extends JComponent implements MouseListener, MouseMotionLis
     }
 
     @Override
-    public void mouseEntered(MouseEvent e) {
+    public void mouseEntered(MouseEvent e)
+    {
         mouseEntered = true;
         setBorder(pressedBorder);
     }
 
     @Override
-    public void mouseExited(MouseEvent e) {
+    public void mouseExited(MouseEvent e)
+    {
         mouseEntered = false;
         setBorder(unpressedBorder);
 
